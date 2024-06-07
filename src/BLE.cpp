@@ -1,0 +1,148 @@
+#include <Arduino.h>
+#include <BLEDevice.h>
+#include <BLEServer.h>
+#include <BLEUtils.h>
+#include <BLE2902.h>
+
+
+BLEServer* pServer = NULL;
+BLECharacteristic* pCharacteristic = NULL;
+bool deviceConnected = false;
+uint32_t value = 0;
+
+//extern String ds1;
+
+//char hexChar[150]; //массив для sprintf() функции (150 - на строку)
+char mcalibr[24] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}; //буфер передачи BLE
+//char strble[20];
+char cindex [512] = {'\0'};  // 511 chars and the end terminator
+char ctemp [512] = {'\0'};
+
+
+// See the following for generating UUIDs:
+// https://www.uuidgenerator.net/
+
+#define SERVICE_UUID        "450475bb-56a2-4c97-9973-301831e65a30"
+#define CHARACTERISTIC_UUID "d8182a40-7316-4cbf-9c6e-be507a76d775"
+
+//Declaration
+void ble_handle_tx(String str );
+
+//ловим события connect/disconnect от BLE сервера
+class MyServerCallbacks: public BLEServerCallbacks {
+    void onConnect(BLEServer* pServer) {
+      deviceConnected = true;
+      Serial.println("Event-Connect..");
+      digitalWrite(8, LOW);
+    };
+
+    void onDisconnect(BLEServer* pServer) {
+      deviceConnected = false;
+      Serial.println("Event-Disconnect..");
+
+      delay(200); // give the bluetooth stack the chance to get things ready
+      BLEDevice::startAdvertising();  // restart advertising
+      digitalWrite(8, HIGH);
+    }
+};
+
+//ловим события от BLE сервиса read/write
+class MyCallbacks: public BLECharacteristicCallbacks {
+    void onWrite(BLECharacteristic* pCharacteristic, esp_ble_gatts_cb_param_t* param) { //запись в сервис..
+        std::string rxValue = pCharacteristic->getValue(); //строка от BLE
+
+        if (rxValue.length() > 0) {
+            //печатаем строку от BLE
+            Serial.print("Received Value: ");
+            for (int i = 0; i < rxValue.length(); i++) {
+                Serial.print(rxValue[i]);
+            }
+            // Do stuff based on the command received from the app
+            if ((rxValue.find("AT") != -1)||(rxValue.find("at") != -1)) { 
+                ble_handle_tx("ADC-SENSOR #1"); //ответ c показанием датчика 
+            }  
+        }
+    }
+
+    void onRead(BLECharacteristic* pCharacteristic, esp_ble_gatts_cb_param_t* param) { //чтение
+        Serial.println("Event-Read..");
+    }
+
+ };
+
+
+void ble_setup(){
+
+  // Create the BLE Device
+  BLEDevice::init("ADC-SENSOR#1");
+
+  // Create the BLE Server
+  pServer = BLEDevice::createServer();
+  pServer->setCallbacks(new MyServerCallbacks()); //Обработчик событий connect/disconnect от BLE
+
+  // Create the BLE Service
+  BLEService *pService = pServer->createService(SERVICE_UUID);
+
+  // Create a BLE Characteristic
+  pCharacteristic = pService->createCharacteristic(
+                      CHARACTERISTIC_UUID,
+                    /*  BLECharacteristic::PROPERTY_READ   |*/
+                      BLECharacteristic::PROPERTY_WRITE  |
+                      BLECharacteristic::PROPERTY_NOTIFY |
+                    /*  BLECharacteristic::PROPERTY_BROADCAST|*/
+                      BLECharacteristic::PROPERTY_INDICATE
+                    );
+
+  // Create a BLE Descriptor !!!
+  pCharacteristic->addDescriptor(new BLE2902()); //без дискритора не подключается..
+
+  pCharacteristic->setCallbacks(new MyCallbacks()); //обработчик событий read/write
+
+  // Start the service
+  pService->start();
+
+  // Start advertising
+  //BLEAdvertising *pAdvertising = pServer->getAdvertising(); // this still is working for backward compatibility ???????
+  //BLEAdvertising *pAdvertising = BLEDevice::getAdvertising(); //так правильней ???
+  //pAdvertising->start();
+  
+  //pAdvertising->addServiceUUID(SERVICE_UUID);
+  //pAdvertising->setScanResponse(true);
+  //pAdvertising->setMinPreferred(0x06);  // functions that help with iPhone connections issue
+  //pAdvertising->setMinPreferred(0x12);
+  BLEDevice::startAdvertising();  //так правильней ???
+  
+
+  Serial.print("BLE Server address: ");
+  Serial.println(BLEDevice::getAddress().toString().c_str());
+}
+
+//ответ клиенту с показанием датчика
+void ble_handle_tx(String str){
+
+    if (deviceConnected) { //проверка, что подключен клиент BLE
+
+        int sec = millis() / 1000;
+        int min = sec / 60;
+        int hr = min / 60;
+        //snprintf(ctemp, 512, cindex, hr, min % 60, sec % 60, ESP.getFreeHeap());
+
+        //String strble= "ADC-SENSOR #1 !\r\n";
+        //int len = strble.length();
+        if(str.length()>30) str="resp length error..\r\n";
+        if(str.length()==0) str="none..\r\n";
+        str = str+"\r\n";
+        //sprintf(mcalibr, "%s\r\n",strble.c_str()); //добавляем параметры
+
+        //pCharacteristic->setValue((uint8_t*)mcalibr,len+2); //worked..)
+        //pCharacteristic->setValue(String(mcalibr).c_str()); //worked..)
+        //pCharacteristic->setValue(mcalibr); //worked..)
+        pCharacteristic->setValue(str.c_str());
+
+        pCharacteristic->indicate();//для работы с BLE терминалом !!!!!!!
+
+        Serial.print("Responce for BLE client: "+str);
+    }
+
+
+}
