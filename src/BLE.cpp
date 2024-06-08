@@ -4,6 +4,12 @@
 #include <BLEUtils.h>
 #include <BLE2902.h>
 
+//Declaration
+extern int sens_value;
+extern float sens_voltage;
+extern float factor;
+extern float real_voltage;
+
 
 BLEServer* pServer = NULL;
 BLECharacteristic* pCharacteristic = NULL;
@@ -53,14 +59,26 @@ class MyCallbacks: public BLECharacteristicCallbacks {
 
         if (rxValue.length() > 0) {
             //печатаем строку от BLE
-            Serial.print("Received Value: ");
-            for (int i = 0; i < rxValue.length(); i++) {
-                Serial.print(rxValue[i]);
-            }
+            String pstr = String(rxValue.c_str());
+            Serial.print("BLE received Value: ");Serial.print(pstr);
+            
             // Do stuff based on the command received from the app
-            if ((rxValue.find("AT") != -1)||(rxValue.find("at") != -1)) { 
-                ble_handle_tx("ADC-SENSOR #1"); //ответ c показанием датчика 
-            }  
+            if (pstr=="at\r\n") { 
+                ble_handle_tx("OK"); //sensor number
+            }            
+            else if (pstr=="atn\r\n") { 
+                ble_handle_tx("ADC-SENSOR #1"); //sensor number
+            }            
+            else if (pstr=="ati\r\n") { 
+              String s ="sens_pure="+String(sens_value)+"\r\nsens_voltage="+String(sens_voltage)
+                  +"\r\nfactor="+String(factor)+"\r\nreal_voltage="+String(real_voltage);
+                ble_handle_tx(s); //information for debug
+            }
+            else if (pstr=="atv\r\n") { 
+                ble_handle_tx(String(real_voltage)); //ответ c учетом калибровки
+            }
+            else ble_handle_tx("???");
+            
         }
     }
 
@@ -117,31 +135,18 @@ void ble_setup(){
   Serial.println(BLEDevice::getAddress().toString().c_str());
 }
 
-//ответ клиенту с показанием датчика
+//ответ клиенту
 void ble_handle_tx(String str){
 
     if (deviceConnected) { //проверка, что подключен клиент BLE
-
-        int sec = millis() / 1000;
-        int min = sec / 60;
-        int hr = min / 60;
-        //snprintf(ctemp, 512, cindex, hr, min % 60, sec % 60, ESP.getFreeHeap());
-
-        //String strble= "ADC-SENSOR #1 !\r\n";
-        //int len = strble.length();
-        if(str.length()>30) str="resp length error..\r\n";
         if(str.length()==0) str="none..\r\n";
+
         str = str+"\r\n";
-        //sprintf(mcalibr, "%s\r\n",strble.c_str()); //добавляем параметры
-
-        //pCharacteristic->setValue((uint8_t*)mcalibr,len+2); //worked..)
-        //pCharacteristic->setValue(String(mcalibr).c_str()); //worked..)
-        //pCharacteristic->setValue(mcalibr); //worked..)
+        //Serial.println("str="+str);
         pCharacteristic->setValue(str.c_str());
-
         pCharacteristic->indicate();//для работы с BLE терминалом !!!!!!!
 
-        Serial.print("Responce for BLE client: "+str);
+        Serial.print("Send to BLE client: "+str);
     }
 
 
