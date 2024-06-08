@@ -5,6 +5,7 @@
 #include <BLE2902.h>
 
 //Declaration
+void storage_factor(String sfact);
 extern int sens_value;
 extern float sens_voltage;
 extern float factor;
@@ -77,6 +78,10 @@ class MyCallbacks: public BLECharacteristicCallbacks {
             else if (pstr=="atv\r\n") { 
                 ble_handle_tx(String(real_voltage)); //ответ c учетом калибровки
             }
+            else if (pstr.substring(0,4)=="atf=") { 
+                storage_factor(pstr.substring(4)); //сохранить калибровку
+            }
+
             else ble_handle_tx("???");
             
         }
@@ -148,6 +153,14 @@ void ble_handle_tx(String str){
 
         Serial.print("Send to BLE client: "+str);
     }
+
+
+}
+//сохраняем factor
+void storage_factor(String sfact){
+factor=sfact.toFloat(); //округляет до 2-х знаков после дес. точки...???
+Serial.println("new factor="+String(factor));
+ble_handle_tx("new factor="+String(factor)); //ответ на BLE
 
 
 }
