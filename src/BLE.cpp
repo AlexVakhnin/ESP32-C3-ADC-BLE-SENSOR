@@ -6,10 +6,13 @@
 #include <Preferences.h>
 
 //Declaration
-void storage_factor(String sfact);
+//void storage_factor(String sfact);
+void storage_factor_u(String su);
+void storage_adc_u(String su);
 extern int sens_value;
 extern float sens_voltage;
-extern float factor;
+extern double factor;
+extern double adc_calibr;
 extern float real_voltage;
 
 
@@ -20,11 +23,6 @@ uint32_t value = 0;
 
 Preferences preferences; //for NVRAM
 
-//char hexChar[150]; //массив для sprintf() функции (150 - на строку)
-char mcalibr[24] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}; //буфер передачи BLE
-//char strble[20];
-char cindex [512] = {'\0'};  // 511 chars and the end terminator
-char ctemp [512] = {'\0'};
 
 
 // See the following for generating UUIDs:
@@ -41,7 +39,7 @@ class MyServerCallbacks: public BLEServerCallbacks {
     void onConnect(BLEServer* pServer) {
       deviceConnected = true;
       Serial.println("Event-Connect..");
-      digitalWrite(8, LOW);
+      //digitalWrite(8, LOW);
     };
 
     void onDisconnect(BLEServer* pServer) {
@@ -50,7 +48,7 @@ class MyServerCallbacks: public BLEServerCallbacks {
 
       delay(200); // give the bluetooth stack the chance to get things ready
       BLEDevice::startAdvertising();  // restart advertising
-      digitalWrite(8, HIGH);
+      //digitalWrite(8, HIGH);
     }
 };
 
@@ -69,20 +67,25 @@ class MyCallbacks: public BLECharacteristicCallbacks {
                 ble_handle_tx("OK"); //sensor number
             }            
             else if (pstr=="atn\r\n") { 
-                ble_handle_tx("ADC-SENSOR #1"); //sensor number
+                ble_handle_tx("ADC-SENSOR#1"); //sensor number
             }            
-            else if (pstr=="ati\r\n") { 
+            else if (pstr=="ati\r\n") { //ati - information
               String s ="sens_pure="+String(sens_value)+"\r\nsens_voltage="+String(sens_voltage)
                   +"\r\nfactor="+String(factor)+"\r\nreal_voltage="+String(real_voltage);
                 ble_handle_tx(s); //information for debug
             }
-            else if (pstr=="atv\r\n") { 
+            else if (pstr=="atv\r\n") { //atv - result voltage
                 ble_handle_tx(String(real_voltage)); //ответ c учетом калибровки
             }
-            else if (pstr.substring(0,4)=="atf=") { 
-                storage_factor(pstr.substring(4)); //сохранить калибровку
+            //else if (pstr.substring(0,4)=="atf=") { 
+            //    storage_factor(pstr.substring(4)); //сохранить коэфициент
+            //}
+            else if (pstr.substring(0,4)=="atu=") {  //atu= - attenuator calibration
+                storage_factor_u(pstr.substring(4)); //калибровка делителя
             }
-
+            else if (pstr.substring(0,4)=="ata=") { //ata= - ADC calibration
+                storage_adc_u(pstr.substring(4)); //калибровка ADC
+            }
             else ble_handle_tx("???");
             
         }
@@ -126,22 +129,22 @@ void ble_setup(){
   pService->start();
 
   // Start advertising
-  //BLEAdvertising *pAdvertising = pServer->getAdvertising(); // this still is working for backward compatibility ???????
-  //BLEAdvertising *pAdvertising = BLEDevice::getAdvertising(); //так правильней ???
-  //pAdvertising->start();
+  BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
   
-  //pAdvertising->addServiceUUID(SERVICE_UUID);
-  //pAdvertising->setScanResponse(true);
-  //pAdvertising->setMinPreferred(0x06);  // functions that help with iPhone connections issue
-  //pAdvertising->setMinPreferred(0x12);
-  BLEDevice::startAdvertising();  //так правильней ???
+  pAdvertising->addServiceUUID(SERVICE_UUID);
+  pAdvertising->setScanResponse(true);
+  pAdvertising->setMinPreferred(0x06);  // functions that help with iPhone connections issue
+  pAdvertising->setMinPreferred(0x12);
+  BLEDevice::startAdvertising();  
   
 
   Serial.print("BLE Server address: ");
   Serial.println(BLEDevice::getAddress().toString().c_str());
 
   preferences.begin("hiveMon", false); //открываем NVRAM
-  factor = preferences.getFloat("myCal_factor", 0.0); //читаем factor 
+//  factor = preferences.getFloat("myCal_factor", 0.0); //читаем factor 
+  factor = preferences.getDouble("myCal_factor", 0.0); //читаем factor 
+  adc_calibr = preferences.getDouble("adc_calibr", 3.3); //читаем NVRAM
   preferences.end(); //закрываем NVRAM
 }
 
@@ -159,16 +162,36 @@ void ble_handle_tx(String str){
         Serial.print("Send to BLE client: "+str);
     }
 
-
 }
-//сохраняем factor
+/*
+//сохраняем factor (вводим коэффициент)
 void storage_factor(String sfact){
-factor=sfact.toFloat(); //округляет до 2-х знаков после дес. точки...???
+factor=sfact.toDouble(); //String to Double
 Serial.println("new factor="+String(factor));
 ble_handle_tx("new factor="+String(factor)); //ответ на BLE
-
 preferences.begin("hiveMon", false);
-preferences.putFloat("myCal_factor", factor);
+preferences.putDouble("myCal_factor", factor);
 preferences.end();
+}
+*/
+//калибровка делителя через U (вводим напряжение)
+void storage_factor_u(String su){
+float test_volt=su.toFloat(); //округляет до 2-х знаков после дес. точки...???
+factor = test_volt/sens_voltage;
+Serial.println("new factor="+String(factor));
+ble_handle_tx("new factor="+String(factor)); //ответ на BLE
+preferences.begin("hiveMon", false);
+preferences.putDouble("myCal_factor", factor);
+preferences.end();
+}
 
+//калибровка ADC через U (вводим напряжение)
+void storage_adc_u(String su){
+float test_volt=su.toFloat(); //округляет до 2-х знаков после дес. точки...???
+adc_calibr = test_volt*4096/sens_value;
+Serial.println("new adc_calibr="+String(adc_calibr));
+ble_handle_tx("new adc_calibr="+String(adc_calibr)); //ответ на BLE
+preferences.begin("hiveMon", false);
+preferences.putDouble("adc_calibr", adc_calibr);
+preferences.end();
 }
