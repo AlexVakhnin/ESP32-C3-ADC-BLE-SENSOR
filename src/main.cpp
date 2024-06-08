@@ -39,8 +39,8 @@ void loop() {
   sens_voltage =sens_value/(4096/3.3);
   real_voltage = sens_voltage * factor;
 
-  //Serial.print("sens_value: "+ String(sens_value));Serial.print("  sens_voltage = "+ String(sens_voltage));
-  //Serial.print("  factor: "+ String(factor));Serial.println("  real_voltage = "+ String(real_voltage));
+  Serial.print("sens_value: "+ String(sens_value));Serial.print("  sens_voltage = "+ String(sens_voltage));
+  Serial.print("  factor: "+ String(factor));Serial.println("  real_voltage = "+ String(real_voltage));
 
   delay(2000); 
 }
