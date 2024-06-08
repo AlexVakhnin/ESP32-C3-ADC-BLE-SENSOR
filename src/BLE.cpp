@@ -3,6 +3,7 @@
 #include <BLEServer.h>
 #include <BLEUtils.h>
 #include <BLE2902.h>
+#include <Preferences.h>
 
 //Declaration
 void storage_factor(String sfact);
@@ -17,7 +18,7 @@ BLECharacteristic* pCharacteristic = NULL;
 bool deviceConnected = false;
 uint32_t value = 0;
 
-//extern String ds1;
+Preferences preferences; //for NVRAM
 
 //char hexChar[150]; //массив для sprintf() функции (150 - на строку)
 char mcalibr[24] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}; //буфер передачи BLE
@@ -138,6 +139,10 @@ void ble_setup(){
 
   Serial.print("BLE Server address: ");
   Serial.println(BLEDevice::getAddress().toString().c_str());
+
+  preferences.begin("hiveMon", false); //открываем NVRAM
+  factor = preferences.getFloat("myCal_factor", 0.0); //читаем factor 
+  preferences.end(); //закрываем NVRAM
 }
 
 //ответ клиенту
@@ -162,5 +167,8 @@ factor=sfact.toFloat(); //округляет до 2-х знаков после �
 Serial.println("new factor="+String(factor));
 ble_handle_tx("new factor="+String(factor)); //ответ на BLE
 
+preferences.begin("hiveMon", false);
+preferences.putFloat("myCal_factor", factor);
+preferences.end();
 
 }
