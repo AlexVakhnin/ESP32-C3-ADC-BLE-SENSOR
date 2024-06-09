@@ -248,7 +248,7 @@ void help_print(){
   String  shelp="ati info";
           shelp+="\r\natv resulting voltage";
           shelp+="\r\nata=[U] ADC calibration";
-          shelp+="\r\nata=[U] attenuator calibration";
+          shelp+="\r\natu=[U] attenuator calibration";
           shelp+="\r\nath=[U] alarm H Voltage";
           shelp+="\r\natl=[U] alarm L Voltage";
           shelp+="\r\natn=[name] BLE device name";
