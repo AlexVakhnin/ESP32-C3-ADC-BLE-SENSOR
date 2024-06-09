@@ -12,8 +12,8 @@ float sens_voltage = 0;
 double factor = 2; //calibration factor
 double adc_calibr =3.3;
 float real_voltage =0;
-float alarm_voltage1 =11;
-float alarm_voltage2 =10;
+float alarm_h =11;
+float alarm_l =10;
 int alarm_flag = 0;
 
 Ticker hTicker; //for alarm
@@ -26,7 +26,7 @@ void setup() {
   digitalWrite(8, HIGH); //led = OFF
   pinMode(sens_pin, INPUT); // declare the sens_pin as an INPUT
 
-   //инициализация прерывания (5 sec.)
+   //инициализация прерывания (1.5 sec.)
   hTicker.attach_ms(1500, alarm_blink);
 
 
@@ -36,7 +36,7 @@ void setup() {
   Serial.println("----------------Start Info-----------------");
   Serial.printf("Total heap:\t%d \r\n", ESP.getHeapSize());
   Serial.printf("Free heap:\t%d \r\n", ESP.getFreeHeap());
-  Serial.println("ADC_PIN= "+sens_pin);
+  Serial.println("ADC_PIN= "+String(sens_pin));
 
   ble_setup(); //start BLE server
 
@@ -47,12 +47,12 @@ void loop() {
 
   // read the value from the sensor:
   sens_value = analogRead(sens_pin);
-
+  // calculate
   sens_voltage =sens_value*adc_calibr/4096;
   real_voltage = sens_voltage * factor;
 
-  if     (real_voltage < alarm_voltage2) alarm_flag=2; //10V
-  else if(real_voltage < alarm_voltage1) alarm_flag=1; //11V
+  if     (real_voltage < alarm_l) alarm_flag=2; //10V
+  else if(real_voltage < alarm_h) alarm_flag=1; //11V
   else alarm_flag=0;
 
 

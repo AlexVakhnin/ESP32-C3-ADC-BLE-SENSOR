@@ -9,11 +9,16 @@
 //void storage_factor(String sfact);
 void storage_factor_u(String su);
 void storage_adc_u(String su);
+void storage_alarm_h(String su);
+void storage_alarm_l(String su);
+//Global Variables
 extern int sens_value;
 extern float sens_voltage;
-extern double factor;
-extern double adc_calibr;
 extern float real_voltage;
+extern double factor; //(nvram)
+extern double adc_calibr; //(nvram)
+extern float alarm_h; //(nvram)
+extern float alarm_l; //(nvram)
 
 
 BLEServer* pServer = NULL;
@@ -70,7 +75,8 @@ class MyCallbacks: public BLECharacteristicCallbacks {
                 ble_handle_tx("ADC-SENSOR#1"); //sensor number
             }            
             else if (pstr=="ati\r\n") { //ati - information
-              String s ="sens_pure="+String(sens_value)+"\r\nsens_voltage="+String(sens_voltage)
+              String s ="alarm_h="+String(alarm_h)+"\r\nalarm_l="+String(alarm_l)+  
+                  +"\r\nsens_pure="+String(sens_value)+"\r\nsens_voltage="+String(sens_voltage)
                   +"\r\nfactor="+String(factor)+"\r\nreal_voltage="+String(real_voltage);
                 ble_handle_tx(s); //information for debug
             }
@@ -81,10 +87,16 @@ class MyCallbacks: public BLECharacteristicCallbacks {
             //    storage_factor(pstr.substring(4)); //сохранить коэфициент
             //}
             else if (pstr.substring(0,4)=="atu=") {  //atu= - attenuator calibration
-                storage_factor_u(pstr.substring(4)); //калибровка делителя
+                storage_factor_u(pstr.substring(4));
             }
             else if (pstr.substring(0,4)=="ata=") { //ata= - ADC calibration
-                storage_adc_u(pstr.substring(4)); //калибровка ADC
+                storage_adc_u(pstr.substring(4));
+            }
+            else if (pstr.substring(0,4)=="ath=") { //ath= - alarm_h save NVRAM
+                storage_alarm_h(pstr.substring(4)); //alarm_h
+            }
+            else if (pstr.substring(0,4)=="atl=") { //atl= - alarm_l save NVRAM
+                storage_alarm_l(pstr.substring(4)); //alarm_l
             }
             else ble_handle_tx("???");
             
@@ -97,7 +109,7 @@ class MyCallbacks: public BLECharacteristicCallbacks {
 
  };
 
-
+//Init BLE Service
 void ble_setup(){
 
   // Create the BLE Device
@@ -129,8 +141,7 @@ void ble_setup(){
   pService->start();
 
   // Start advertising
-  BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
-  
+  BLEAdvertising *pAdvertising = BLEDevice::getAdvertising(); 
   pAdvertising->addServiceUUID(SERVICE_UUID);
   pAdvertising->setScanResponse(true);
   pAdvertising->setMinPreferred(0x06);  // functions that help with iPhone connections issue
@@ -142,9 +153,10 @@ void ble_setup(){
   Serial.println(BLEDevice::getAddress().toString().c_str());
 
   preferences.begin("hiveMon", false); //открываем NVRAM
-//  factor = preferences.getFloat("myCal_factor", 0.0); //читаем factor 
   factor = preferences.getDouble("myCal_factor", 0.0); //читаем factor 
   adc_calibr = preferences.getDouble("adc_calibr", 3.3); //читаем NVRAM
+  alarm_h = preferences.getFloat("alarm_h", 11.0); //читаем NVRAM
+  alarm_l = preferences.getFloat("alarm_l", 10.0); //читаем NVRAM
   preferences.end(); //закрываем NVRAM
 }
 
@@ -176,22 +188,39 @@ preferences.end();
 */
 //калибровка делителя через U (вводим напряжение)
 void storage_factor_u(String su){
-float test_volt=su.toFloat(); //округляет до 2-х знаков после дес. точки...???
-factor = test_volt/sens_voltage;
-Serial.println("new factor="+String(factor));
-ble_handle_tx("new factor="+String(factor)); //ответ на BLE
-preferences.begin("hiveMon", false);
-preferences.putDouble("myCal_factor", factor);
-preferences.end();
+  float test_volt=su.toFloat(); //округляет до 2-х знаков после дес. точки...???
+  factor = test_volt/sens_voltage;
+  Serial.println("new factor="+String(factor));
+  ble_handle_tx("new factor="+String(factor)); //ответ на BLE
+
+  preferences.begin("hiveMon", false);
+  preferences.putDouble("myCal_factor", factor);
+  preferences.end();
 }
 
 //калибровка ADC через U (вводим напряжение)
 void storage_adc_u(String su){
-float test_volt=su.toFloat(); //округляет до 2-х знаков после дес. точки...???
-adc_calibr = test_volt*4096/sens_value;
-Serial.println("new adc_calibr="+String(adc_calibr));
-ble_handle_tx("new adc_calibr="+String(adc_calibr)); //ответ на BLE
-preferences.begin("hiveMon", false);
-preferences.putDouble("adc_calibr", adc_calibr);
-preferences.end();
+  float test_volt=su.toFloat(); //округляет до 2-х знаков после дес. точки...???
+  adc_calibr = test_volt*4096/sens_value;
+  Serial.println("new adc_calibr="+String(adc_calibr));
+  ble_handle_tx("new adc_calibr="+String(adc_calibr)); //ответ на BLE
+
+  preferences.begin("hiveMon", false);
+  preferences.putDouble("adc_calibr", adc_calibr);
+  preferences.end();
+}
+//
+void storage_alarm_h(String su){
+  alarm_h = su.toFloat(); 
+  ble_handle_tx("new alarm_h="+String(alarm_h)); //ответ на BLE
+  preferences.begin("hiveMon", false);
+  preferences.putFloat("alarm_h", alarm_h);
+  preferences.end();
+}
+void storage_alarm_l(String su){
+  alarm_l = su.toFloat();
+  ble_handle_tx("new alarm_l="+String(alarm_l)); //ответ на BLE
+  preferences.begin("hiveMon", false);
+  preferences.putFloat("alarm_l", alarm_l);
+  preferences.end();
 }
