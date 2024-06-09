@@ -11,7 +11,10 @@ void storage_factor_u(String su);
 void storage_adc_u(String su);
 void storage_alarm_h(String su);
 void storage_alarm_l(String su);
+void storage_dev_name(String dname);
+void help_print();
 //Global Variables
+extern String dev_name;
 extern int sens_value;
 extern float sens_voltage;
 extern float real_voltage;
@@ -68,14 +71,14 @@ class MyCallbacks: public BLECharacteristicCallbacks {
             Serial.print("BLE received Value: ");Serial.print(pstr);
             
             // Do stuff based on the command received from the app
-            if (pstr=="at\r\n") { 
+            if (pstr=="at\r\n") {     //at
                 ble_handle_tx("OK"); //sensor number
-            }            
-            else if (pstr=="atn\r\n") { 
-                ble_handle_tx("ADC-SENSOR#1"); //sensor number
+            }
+            else if (pstr=="at?\r\n") { //at? - help
+                help_print();
             }            
             else if (pstr=="ati\r\n") { //ati - information
-              String s ="alarm_h="+String(alarm_h)+"\r\nalarm_l="+String(alarm_l)+  
+              String s ="name="+dev_name+"\r\nalarm_h="+String(alarm_h)+"\r\nalarm_l="+String(alarm_l)+  
                   +"\r\nsens_pure="+String(sens_value)+"\r\nsens_voltage="+String(sens_voltage)
                   +"\r\nfactor="+String(factor)+"\r\nreal_voltage="+String(real_voltage);
                 ble_handle_tx(s); //information for debug
@@ -98,6 +101,9 @@ class MyCallbacks: public BLECharacteristicCallbacks {
             else if (pstr.substring(0,4)=="atl=") { //atl= - alarm_l save NVRAM
                 storage_alarm_l(pstr.substring(4)); //alarm_l
             }
+            else if (pstr.substring(0,4)=="atn=") { //atn= - dev_name save NVRAM
+                storage_dev_name(pstr.substring(4)); //dev_name
+            }
             else ble_handle_tx("???");
             
         }
@@ -112,8 +118,17 @@ class MyCallbacks: public BLECharacteristicCallbacks {
 //Init BLE Service
 void ble_setup(){
 
+  preferences.begin("hiveMon", false); //открываем NVRAM
+  factor = preferences.getDouble("myCal_factor", 2.0); //читаем factor 
+  adc_calibr = preferences.getDouble("adc_calibr", 3.3); //читаем NVRAM
+  alarm_h = preferences.getFloat("alarm_h", 11.0); //читаем NVRAM
+  alarm_l = preferences.getFloat("alarm_l", 10.0); //читаем NVRAM
+  dev_name = preferences.getString("dev_name", "ADC-SENSOR#0"); //читаем NVRAM
+  preferences.end(); //закрываем NVRAM
+
   // Create the BLE Device
-  BLEDevice::init("ADC-SENSOR#1");
+  //BLEDevice::init("ADC-SENSOR#1");
+  BLEDevice::init(dev_name.c_str());
 
   // Create the BLE Server
   pServer = BLEDevice::createServer();
@@ -133,7 +148,7 @@ void ble_setup(){
                     );
 
   // Create a BLE Descriptor !!!
-  pCharacteristic->addDescriptor(new BLE2902()); //без дискритора не подключается..
+  pCharacteristic->addDescriptor(new BLE2902()); //без дескриптора не подключается..!!!
 
   pCharacteristic->setCallbacks(new MyCallbacks()); //обработчик событий read/write
 
@@ -148,16 +163,9 @@ void ble_setup(){
   pAdvertising->setMinPreferred(0x12);
   BLEDevice::startAdvertising();  
   
-
   Serial.print("BLE Server address: ");
   Serial.println(BLEDevice::getAddress().toString().c_str());
-
-  preferences.begin("hiveMon", false); //открываем NVRAM
-  factor = preferences.getDouble("myCal_factor", 0.0); //читаем factor 
-  adc_calibr = preferences.getDouble("adc_calibr", 3.3); //читаем NVRAM
-  alarm_h = preferences.getFloat("alarm_h", 11.0); //читаем NVRAM
-  alarm_l = preferences.getFloat("alarm_l", 10.0); //читаем NVRAM
-  preferences.end(); //закрываем NVRAM
+  Serial.println("BLE Device name: "+ dev_name);
 }
 
 //ответ клиенту
@@ -223,4 +231,26 @@ void storage_alarm_l(String su){
   preferences.begin("hiveMon", false);
   preferences.putFloat("alarm_l", alarm_l);
   preferences.end();
+}
+void storage_dev_name(String dname){
+  //Нужно удалить \r\n в конце строки..
+  int n = dname.length(); 
+  dev_name = dname.substring(0,n-2);
+  ble_handle_tx("new dev_name="+dev_name); //ответ на BLE
+  preferences.begin("hiveMon", false);
+  preferences.putString("dev_name", dev_name);
+  preferences.end();
+  delay(3000);
+  ESP.restart();
+}
+
+void help_print(){
+  String  shelp="ati info";
+          shelp+="\r\natv resulting voltage";
+          shelp+="\r\nata=[U] ADC calibration";
+          shelp+="\r\nata=[U] attenuator calibration";
+          shelp+="\r\nath=[U] alarm H Voltage";
+          shelp+="\r\natl=[U] alarm L Voltage";
+          shelp+="\r\natn=[name] BLE device name";
+  ble_handle_tx(shelp);
 }

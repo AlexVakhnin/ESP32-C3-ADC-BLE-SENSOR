@@ -7,13 +7,14 @@ void alarm_blink();
 
 //Variables
 const int sens_pin = 0;//A0;
+String dev_name = "ADC-SENSOR#2"; //name of BLE service
 int sens_value = 0; //pure sensor
-float sens_voltage = 0;
-double factor = 2; //calibration factor
-double adc_calibr =3.3;
-float real_voltage =0;
-float alarm_h =11;
-float alarm_l =10;
+float sens_voltage = 0; //Voltage ADC Input
+double factor = 2; //calibration attenuator factor
+double adc_calibr =3.3; //calibration ADC factor
+float real_voltage =0; //measuring voltage
+float alarm_h =11; //led alarm threshold value 1
+float alarm_l =10; //led alarm threshold value 2
 int alarm_flag = 0;
 
 Ticker hTicker; //for alarm
