@@ -247,8 +247,8 @@ void storage_dev_name(String dname){
 void help_print(){
   String  shelp="ati info";
           shelp+="\r\natv resulting voltage";
-          shelp+="\r\nata=[U] ADC calibration";
-          shelp+="\r\natu=[U] attenuator calibration";
+          shelp+="\r\nata=[U_ADC_in] ADC calibration";
+          shelp+="\r\natu=[U_in] attenuator calibration";
           shelp+="\r\nath=[U] alarm H Voltage";
           shelp+="\r\natl=[U] alarm L Voltage";
           shelp+="\r\natn=[name] BLE device name";
