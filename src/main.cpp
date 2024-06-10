@@ -66,7 +66,7 @@ void loop() {
 
   //Serial.print("sens_value: "+ String(sens_value));Serial.print("  sens_voltage = "+ String(sens_voltage));
   //Serial.print("  factor: "+ String(factor));Serial.println("  real_voltage = "+ String(real_voltage));
-  Serial.printf("v=%3f\n",real_voltage);
+  Serial.printf("v=%3f\r\n",real_voltage);
 
   delay(2000); 
 }
