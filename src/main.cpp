@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <Ticker.h>
+//#include <nvs_flash.h> //для стирания всего NVRAM
 
 //Function Declaration
 extern void ble_setup();
@@ -20,6 +21,12 @@ int alarm_flag = 0;
 Ticker hTicker; //for alarm
 
 void setup() {
+
+    // запускаем один раз !!!, если нужно, стирает NVRAM (#include <nvs_flash.h>)
+    //nvs_flash_erase();      // erase the NVS partition and...
+    //nvs_flash_init();       // initialize the NVS partition.
+    //while (true); //STOP..
+
     Serial.begin(115200);
 
   //internal led

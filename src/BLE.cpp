@@ -13,6 +13,7 @@ void storage_alarm_h(String su);
 void storage_alarm_l(String su);
 void storage_dev_name(String dname);
 void help_print();
+void reset_nvram();
 //Global Variables
 extern String dev_name;
 extern int sens_value;
@@ -54,7 +55,7 @@ class MyServerCallbacks: public BLEServerCallbacks {
       deviceConnected = false;
       Serial.println("Event-Disconnect..");
 
-      delay(200); // give the bluetooth stack the chance to get things ready
+      delay(300); // give the bluetooth stack the chance to get things ready
       BLEDevice::startAdvertising();  // restart advertising
       //digitalWrite(8, HIGH);
     }
@@ -77,10 +78,14 @@ class MyCallbacks: public BLECharacteristicCallbacks {
             else if (pstr=="at?\r\n") { //at? - help
                 help_print();
             }            
+            else if (pstr=="atz\r\n") { //atz - reset NVRAM
+                reset_nvram();
+            }            
             else if (pstr=="ati\r\n") { //ati - information
               String s ="name="+dev_name+"\r\nalarm_h="+String(alarm_h)+"\r\nalarm_l="+String(alarm_l)+  
-                  +"\r\nsens_pure="+String(sens_value)+"\r\nsens_voltage="+String(sens_voltage)
-                  +"\r\nfactor="+String(factor)+"\r\nreal_voltage="+String(real_voltage);
+                  +"\r\nsens_pure="+String(sens_value)+"\r\nadc_calibr="+String(adc_calibr)
+                  +"\r\nsens_voltage="+String(sens_voltage)                 
+                  +"\r\natt_factor="+String(factor)+"\r\nreal_voltage="+String(real_voltage);
                 ble_handle_tx(s); //information for debug
             }
             else if (pstr=="atv\r\n") { //atv - result voltage
@@ -118,12 +123,13 @@ class MyCallbacks: public BLECharacteristicCallbacks {
 //Init BLE Service
 void ble_setup(){
 
-  preferences.begin("hiveMon", false); //открываем NVRAM
-  factor = preferences.getDouble("myCal_factor", 2.0); //читаем factor 
-  adc_calibr = preferences.getDouble("adc_calibr", 3.3); //читаем NVRAM
-  alarm_h = preferences.getFloat("alarm_h", 11.0); //читаем NVRAM
-  alarm_l = preferences.getFloat("alarm_l", 10.0); //читаем NVRAM
-  dev_name = preferences.getString("dev_name", "ADC-SENSOR#0"); //читаем NVRAM
+  //читаем все параметры NVRAM
+  preferences.begin("hiveMon", true); //открываем пространство имен NVRAM read only
+  factor = preferences.getDouble("att_factor", 5.0);
+  adc_calibr = preferences.getDouble("adc_calibr", 3.01);//default adc_calibr=3.01 Volt !!!
+  alarm_h = preferences.getFloat("alarm_h", 11.0);
+  alarm_l = preferences.getFloat("alarm_l", 10.0);
+  dev_name = preferences.getString("dev_name", "ADC-SENSOR#0");
   preferences.end(); //закрываем NVRAM
 
   // Create the BLE Device
@@ -157,7 +163,7 @@ void ble_setup(){
 
   // Start advertising
   BLEAdvertising *pAdvertising = BLEDevice::getAdvertising(); 
-  pAdvertising->addServiceUUID(SERVICE_UUID);
+  pAdvertising->addServiceUUID(SERVICE_UUID);  //рекламируем свой SERVICE_UUID
   pAdvertising->setScanResponse(true);
   pAdvertising->setMinPreferred(0x06);  // functions that help with iPhone connections issue
   pAdvertising->setMinPreferred(0x12);
@@ -190,7 +196,7 @@ factor=sfact.toDouble(); //String to Double
 Serial.println("new factor="+String(factor));
 ble_handle_tx("new factor="+String(factor)); //ответ на BLE
 preferences.begin("hiveMon", false);
-preferences.putDouble("myCal_factor", factor);
+preferences.putDouble("att_factor", factor);
 preferences.end();
 }
 */
@@ -202,7 +208,7 @@ void storage_factor_u(String su){
   ble_handle_tx("new factor="+String(factor)); //ответ на BLE
 
   preferences.begin("hiveMon", false);
-  preferences.putDouble("myCal_factor", factor);
+  preferences.putDouble("att_factor", factor);
   preferences.end();
 }
 
@@ -253,4 +259,12 @@ void help_print(){
           shelp+="\r\natl=[U] alarm L Voltage";
           shelp+="\r\natn=[name] BLE device name";
   ble_handle_tx(shelp);
+}
+void reset_nvram(){
+  preferences.begin("hiveMon", false); //пространство имен (чтение-запись)
+  preferences.clear(); //удаляем все ключи в пространстве имен
+  preferences.end();
+  ble_handle_tx("NVRAM Key Reset.."); //ответ на BLE
+  delay(3000);
+  ESP.restart();
 }
