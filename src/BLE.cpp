@@ -89,7 +89,7 @@ class MyCallbacks: public BLECharacteristicCallbacks {
                 ble_handle_tx(s); //information for debug
             }
             else if (pstr=="atv\r\n") { //atv - result voltage
-                ble_handle_tx(String(real_voltage)); //ответ c учетом калибровки
+                ble_handle_tx(String(real_voltage,3)); //ответ c учетом калибровки
             }
             //else if (pstr.substring(0,4)=="atf=") { 
             //    storage_factor(pstr.substring(4)); //сохранить коэфициент
@@ -214,7 +214,7 @@ void storage_factor_u(String su){
 
 //калибровка ADC через U (вводим напряжение)
 void storage_adc_u(String su){
-  float test_volt=su.toFloat(); //округляет до 2-х знаков после дес. точки...???
+  float test_volt=su.toFloat();
   adc_calibr = test_volt*4096/sens_value;
   Serial.println("new adc_calibr="+String(adc_calibr));
   ble_handle_tx("new adc_calibr="+String(adc_calibr)); //ответ на BLE
@@ -225,7 +225,7 @@ void storage_adc_u(String su){
 }
 //
 void storage_alarm_h(String su){
-  alarm_h = su.toFloat(); 
+  alarm_h = su.toFloat();
   ble_handle_tx("new alarm_h="+String(alarm_h)); //ответ на BLE
   preferences.begin("hiveMon", false);
   preferences.putFloat("alarm_h", alarm_h);
