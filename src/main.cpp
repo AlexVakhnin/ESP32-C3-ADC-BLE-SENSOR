@@ -38,7 +38,7 @@ void setup() {
   hTicker.attach_ms(1500, alarm_blink);
 
 
-  delay(10000);  //10 sec for DEBUG ...
+  //delay(10000);  //10 sec for Platformio start terminal...
 
   Serial.println();
   Serial.println("----------------Start Info-----------------");
