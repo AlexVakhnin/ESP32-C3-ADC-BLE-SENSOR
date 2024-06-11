@@ -15,6 +15,8 @@ void storage_dev_name(String dname);
 void help_print();
 void reset_nvram();
 //Global Variables
+extern String ds1;
+extern String ds2;
 extern String dev_name;
 extern int sens_value;
 extern float sens_voltage;
@@ -48,16 +50,15 @@ class MyServerCallbacks: public BLEServerCallbacks {
     void onConnect(BLEServer* pServer) {
       deviceConnected = true;
       Serial.println("Event-Connect..");
-      //digitalWrite(8, LOW);
+      ds1="R:";ds2="S:"; //вывод на дисплей
     };
 
     void onDisconnect(BLEServer* pServer) {
       deviceConnected = false;
       Serial.println("Event-Disconnect..");
-
+      ds1="BLE: WAIT";ds2="CONNECT"; //вывод на дисплей
       delay(300); // give the bluetooth stack the chance to get things ready
       BLEDevice::startAdvertising();  // restart advertising
-      //digitalWrite(8, HIGH);
     }
 };
 
@@ -70,10 +71,12 @@ class MyCallbacks: public BLECharacteristicCallbacks {
             //печатаем строку от BLE
             String pstr = String(rxValue.c_str());
             Serial.print("BLE received Value: ");Serial.print(pstr);
+            ds1="R:"+pstr; //вывод на дисплей
             
             // Do stuff based on the command received from the app
             if (pstr=="at\r\n") {     //at
                 ble_handle_tx("OK"); //sensor number
+                ds2="S:OK"; //вывод на дисплей
             }
             else if (pstr=="at?\r\n") { //at? - help
                 help_print();
@@ -90,6 +93,7 @@ class MyCallbacks: public BLECharacteristicCallbacks {
             }
             else if (pstr=="atv\r\n") { //atv - result voltage
                 ble_handle_tx(String(real_voltage,3)); //ответ c учетом калибровки
+                ds2="S:"+String(real_voltage,3); //вывод на дисплей
             }
             //else if (pstr.substring(0,4)=="atf=") { 
             //    storage_factor(pstr.substring(4)); //сохранить коэфициент
@@ -109,7 +113,7 @@ class MyCallbacks: public BLECharacteristicCallbacks {
             else if (pstr.substring(0,4)=="atn=") { //atn= - dev_name save NVRAM
                 storage_dev_name(pstr.substring(4)); //dev_name
             }
-            else ble_handle_tx("???");
+            else {ble_handle_tx("???");ds2="S:???";}
             
         }
     }
@@ -183,7 +187,8 @@ void ble_handle_tx(String str){
         str = str+"\r\n";
         //Serial.println("str="+str);
         pCharacteristic->setValue(str.c_str());
-        pCharacteristic->indicate();//для работы с BLE терминалом !!!!!!!
+        //pCharacteristic->indicate();//для работы с BLE терминалом !!!!!!!
+        pCharacteristic->notify(false); //false=indicate; true=wait confirmation
 
         Serial.print("Send to BLE client: "+str);
     }

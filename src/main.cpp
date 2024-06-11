@@ -3,10 +3,14 @@
 //#include <nvs_flash.h> //для стирания всего NVRAM
 
 //Function Declaration
+extern void disp_show();
+extern void disp_setup();
 extern void ble_setup();
 void alarm_blink();
 
 //Variables
+String ds1="";
+String ds2="";
 const int sens_pin = 0;//A0;
 String dev_name = "ADC-SENSOR#2"; //name of BLE service
 int sens_value = 0; //pure sensor
@@ -34,6 +38,7 @@ void setup() {
   digitalWrite(8, HIGH); //led = OFF
   pinMode(sens_pin, INPUT); // declare the sens_pin as an INPUT
 
+  disp_setup();
    //инициализация прерывания (1.5 sec.)
   hTicker.attach_ms(1500, alarm_blink);
 
@@ -46,8 +51,9 @@ void setup() {
   Serial.printf("Free heap:\t%d \r\n", ESP.getFreeHeap());
   Serial.println("ADC_PIN= "+String(sens_pin));
 
-  ble_setup(); //start BLE server
 
+  ble_setup(); //start BLE server
+  ds1="BLE: WAIT";ds2="CONNECT";
   Serial.println("-----------------------------------------"); 
 }
 
@@ -85,5 +91,5 @@ void alarm_blink(){
       delay(120);
       digitalWrite(8, HIGH);
   }
-
+disp_show();
 }
