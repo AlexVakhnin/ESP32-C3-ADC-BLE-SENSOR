@@ -4,3 +4,5 @@
 ![andr-client3](/Help/andr-client3.png)
 ### Connection setup:
 ![client1-devices](/Help/client1-devices.png)
+### Example of communication
+![client1-show](/Help/client1-show.png)
