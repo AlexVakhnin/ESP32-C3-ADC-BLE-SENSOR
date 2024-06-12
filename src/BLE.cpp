@@ -95,9 +95,6 @@ class MyCallbacks: public BLECharacteristicCallbacks {
                 ble_handle_tx(String(real_voltage,3)); //ответ c учетом калибровки
                 ds2="S:"+String(real_voltage,3); //вывод на дисплей
             }
-            //else if (pstr.substring(0,4)=="atf=") { 
-            //    storage_factor(pstr.substring(4)); //сохранить коэфициент
-            //}
             else if (pstr.substring(0,4)=="atu=") {  //atu= - attenuator calibration
                 storage_factor_u(pstr.substring(4));
             }
@@ -160,11 +157,11 @@ void ble_setup(){
   // все свойства характеристики (READ,WRITE..)- относительно клиента !!!
   pCharacteristic = pService->createCharacteristic(
                       CHARACTERISTIC_UUID,
-                      BLECharacteristic::PROPERTY_READ   |  //??
-                      BLECharacteristic::PROPERTY_WRITE  |
-                      BLECharacteristic::PROPERTY_NOTIFY |
-                      BLECharacteristic::PROPERTY_BROADCAST|  //??
-                      BLECharacteristic::PROPERTY_INDICATE
+                      BLECharacteristic::PROPERTY_READ      |
+                      BLECharacteristic::PROPERTY_WRITE     |
+                      BLECharacteristic::PROPERTY_NOTIFY    |
+                      BLECharacteristic::PROPERTY_INDICATE  |
+                      BLECharacteristic::PROPERTY_WRITE_NR  
                     );
 
   // Create a BLE Descriptor !!!
@@ -177,10 +174,10 @@ void ble_setup(){
 
   // Start advertising
   BLEAdvertising *pAdvertising = BLEDevice::getAdvertising(); 
-  pAdvertising->addServiceUUID(SERVICE_UUID);  //рекламируем свой SERVICE_UUID
+  pAdvertising->addServiceUUID(SERVICE_UUID);  //рекламируем свой SERVICE_UUID(0x07)
   pAdvertising->setScanResponse(true);
-  pAdvertising->setMinPreferred(0x06);  // functions that help with iPhone connections issue
-  pAdvertising->setMinPreferred(0x12);
+  pAdvertising->setMinPreferred(0x06);//Conn.Intrval(0x12) is:0x06 [5 0x12 0x06004000] iOS..
+  //pAdvertising->setMinPreferred(0x12);//Conn.Intrval(0x12) is:0x12 [5 0x12 0x12004000] Default
   BLEDevice::startAdvertising();  
   
   Serial.print("BLE Server address: ");
@@ -204,17 +201,7 @@ void ble_handle_tx(String str){
     }
 
 }
-/*
-//сохраняем factor (вводим коэффициент)
-void storage_factor(String sfact){
-factor=sfact.toDouble(); //String to Double
-Serial.println("new factor="+String(factor));
-ble_handle_tx("new factor="+String(factor)); //ответ на BLE
-preferences.begin("hiveMon", false);
-preferences.putDouble("att_factor", factor);
-preferences.end();
-}
-*/
+
 //калибровка делителя через U (вводим напряжение)
 void storage_factor_u(String su){
   float test_volt=su.toFloat(); //округляет до 2-х знаков после дес. точки...???
