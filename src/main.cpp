@@ -65,8 +65,8 @@ void loop() {
   sens_voltage =sens_value*adc_calibr/4096;
   real_voltage = sens_voltage * factor;
 
-  if     (real_voltage < alarm_l) alarm_flag=2; //10V
-  else if(real_voltage < alarm_h) alarm_flag=1; //11V
+  if     (real_voltage < alarm_l) alarm_flag=2; //11V
+  else if(real_voltage > alarm_h) alarm_flag=1; //14.4V
   else alarm_flag=0;
 
 

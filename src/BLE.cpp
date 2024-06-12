@@ -137,8 +137,8 @@ void ble_setup(){
   preferences.begin("hiveMon", true); //открываем пространство имен NVRAM read only
   factor = preferences.getDouble("att_factor", 5.0);
   adc_calibr = preferences.getDouble("adc_calibr", 3.01);//default adc_calibr=3.01 Volt !!!
-  alarm_h = preferences.getFloat("alarm_h", 11.0);
-  alarm_l = preferences.getFloat("alarm_l", 10.0);
+  alarm_h = preferences.getFloat("alarm_h", 14.4);
+  alarm_l = preferences.getFloat("alarm_l", 11.0);
   dev_name = preferences.getString("dev_name", "ADC-SENSOR#0");
   preferences.end(); //закрываем NVRAM
 
@@ -253,13 +253,14 @@ void storage_dev_name(String dname){
 }
 
 void help_print(){
-  String  shelp="ati info";
-          shelp+="\r\natv resulting voltage";
-          shelp+="\r\nata=[U_ADC_in] ADC calibration";
-          shelp+="\r\natu=[U_in] attenuator calibration";
-          shelp+="\r\nath=[U] alarm H Voltage";
-          shelp+="\r\natl=[U] alarm L Voltage";
-          shelp+="\r\natn=[name] BLE device name";
+  String  shelp="ati -parameter list";
+          shelp+="\r\natv -resulting voltage";
+          shelp+="\r\natz -set default parameters";
+          shelp+="\r\nata=[U_ADC_in] -ADC calibration";
+          shelp+="\r\natu=[U_in] -attenuator calibration";
+          shelp+="\r\nath=[U] -alarm H Voltage";
+          shelp+="\r\natl=[U] -alarm L Voltage";
+          shelp+="\r\natn=[name] -BLE device name";
   ble_handle_tx(shelp);
 }
 void reset_nvram(){
