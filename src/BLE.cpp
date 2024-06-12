@@ -74,24 +74,24 @@ class MyCallbacks: public BLECharacteristicCallbacks {
             ds1="R:"+pstr; //вывод на дисплей
             
             // Do stuff based on the command received from the app
-            if (pstr=="at\r\n") {     //at
+            if (pstr=="at"||pstr=="at\r\n") {     //at
                 ble_handle_tx("OK"); //sensor number
                 ds2="S:OK"; //вывод на дисплей
             }
-            else if (pstr=="at?\r\n") { //at? - help
+            else if (pstr=="at?"||pstr=="at?\r\n") { //at? - help
                 help_print();
             }            
-            else if (pstr=="atz\r\n") { //atz - reset NVRAM
+            else if (pstr=="atz"||pstr=="atz\r\n") { //atz - reset NVRAM
                 reset_nvram();
             }            
-            else if (pstr=="ati\r\n") { //ati - information
+            else if (pstr=="ati"||pstr=="ati\r\n") { //ati - information
               String s ="name="+dev_name+"\r\nalarm_h="+String(alarm_h)+"\r\nalarm_l="+String(alarm_l)+  
                   +"\r\nsens_pure="+String(sens_value)+"\r\nadc_calibr="+String(adc_calibr)
                   +"\r\nsens_voltage="+String(sens_voltage)                 
                   +"\r\natt_factor="+String(factor)+"\r\nreal_voltage="+String(real_voltage);
                 ble_handle_tx(s); //information for debug
             }
-            else if (pstr=="atv\r\n") { //atv - result voltage
+            else if (pstr=="atv"||pstr=="atv\r\n") { //atv - result voltage
                 ble_handle_tx(String(real_voltage,3)); //ответ c учетом калибровки
                 ds2="S:"+String(real_voltage,3); //вывод на дисплей
             }
@@ -118,10 +118,19 @@ class MyCallbacks: public BLECharacteristicCallbacks {
         }
     }
 
-    void onRead(BLECharacteristic* pCharacteristic, esp_ble_gatts_cb_param_t* param) { //чтение
+    //FOR DEBUG
+    /*
+    void onRead(BLECharacteristic* pCharacteristic, esp_ble_gatts_cb_param_t* param) { //Read
         Serial.println("Event-Read..");
     }
-
+    void onNotify(BLECharacteristic* pCharacteristic) { //Notify
+        Serial.println("Event-Notify..");
+    }
+    void onStatus(BLECharacteristic* pCharacteristic, Status s, uint32_t code) { //Status
+        Serial.println("Event-Status..");
+    }
+    */
+   
  };
 
 //Init BLE Service
@@ -148,12 +157,13 @@ void ble_setup(){
   BLEService *pService = pServer->createService(SERVICE_UUID);
 
   // Create a BLE Characteristic
+  // все свойства характеристики (READ,WRITE..)- относительно клиента !!!
   pCharacteristic = pService->createCharacteristic(
                       CHARACTERISTIC_UUID,
-                    /*  BLECharacteristic::PROPERTY_READ   |*/
+                      BLECharacteristic::PROPERTY_READ   |  //??
                       BLECharacteristic::PROPERTY_WRITE  |
                       BLECharacteristic::PROPERTY_NOTIFY |
-                    /*  BLECharacteristic::PROPERTY_BROADCAST|*/
+                      BLECharacteristic::PROPERTY_BROADCAST|  //??
                       BLECharacteristic::PROPERTY_INDICATE
                     );
 
