@@ -1,3 +1,6 @@
+### Links  
+**Schematic:** [ESP32_SenseAirS8_schem.png](https://github.com/AlexVakhnin/ESP32-Web-SenseAirS8/blob/main/ESP32_SenseAirS8_schem.png)
+**Breadboard:** [ESP32_SenseAirS8_bb.png](https://github.com/AlexVakhnin/ESP32-Web-SenseAirS8/blob/main/ESP32_SenseAirS8_bb.png)
 ### The device has been tested using programs:
 ![andr-client1](/Help/andr-client1.png)
 ![andr-client2](/Help/andr-client2.png)
