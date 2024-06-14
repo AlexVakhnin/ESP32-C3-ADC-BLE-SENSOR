@@ -1,6 +1,6 @@
 ### Links:  
 **Schematic:** [sensor-schem](/Help/sensor-schem.png)
-**Breadboard:** [sensor-schem](/Help/sensor_bb.png)
+**Breadboard:** [sensor_bb](/Help/sensor_bb.png)
 ### The device has been tested using programs:
 ![andr-client1](/Help/andr-client1.png)
 ![andr-client2](/Help/andr-client2.png)
