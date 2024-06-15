@@ -47,10 +47,24 @@ void ble_handle_tx(String str );
 
 //ловим события connect/disconnect от BLE сервера
 class MyServerCallbacks: public BLEServerCallbacks {
-    void onConnect(BLEServer* pServer) {
-      deviceConnected = true;
-      Serial.println("Event-Connect..");
+    void onConnect(BLEServer* pServer, esp_ble_gatts_cb_param_t *param) {
+      //формируем адрес клиента
+      char remoteAddress[18];
+      sprintf( remoteAddress , "%.2X:%.2X:%.2X:%.2X:%.2X:%.2X",
+      param->connect.remote_bda[0],
+      param->connect.remote_bda[1],
+      param->connect.remote_bda[2],
+      param->connect.remote_bda[3],
+      param->connect.remote_bda[4],
+      param->connect.remote_bda[5]
+      );
+      //фильтруем mac адреса..
+      //if (param->connect.remote_bda[0]==0x34){
+      //    pServer->disconnect(param->connect.conn_id) ;//force disconnect client..
+      //}
+      Serial.print("Event-Connect..");Serial.println(remoteAddress);
       ds1="R:";ds2="S:"; //вывод на дисплей
+      deviceConnected = true;
     };
 
     void onDisconnect(BLEServer* pServer) {
@@ -178,6 +192,7 @@ void ble_setup(){
   pAdvertising->setScanResponse(true);
   pAdvertising->setMinPreferred(0x06);//Conn.Intrval(0x12) is:0x06 [5 0x12 0x06004000] iOS..
   //pAdvertising->setMinPreferred(0x12);//Conn.Intrval(0x12) is:0x12 [5 0x12 0x12004000] Default
+  //pAdvertising->setMinPreferred(0x0); // set value to 0x00 to not advertise this parameter
   BLEDevice::startAdvertising();  
   
   Serial.print("BLE Server address: ");
