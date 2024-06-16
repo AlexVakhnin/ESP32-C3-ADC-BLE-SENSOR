@@ -16,7 +16,7 @@ const int sens_pin = 0;//A0 for ADC0
 const int charg_pin = 20;//battery charging relay pin
 //const int supply_pin = 21;//battery supply relay pin
 
-String dev_name = "ADC-SENSOR#2"; //name of BLE service
+String dev_name = "ADC-SENSOR#1"; //name of BLE service
 int sens_value = 0; //pure sensor
 float sens_voltage = 0; //Voltage ADC Input
 double factor = 2; //calibration attenuator factor
