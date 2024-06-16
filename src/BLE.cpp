@@ -14,6 +14,7 @@ void storage_alarm_l(String su);
 void storage_dev_name(String dname);
 void help_print();
 void reset_nvram();
+extern void disp_show();
 //Global Variables
 extern String ds1;
 extern String ds2;
@@ -63,14 +64,14 @@ class MyServerCallbacks: public BLEServerCallbacks {
       //    pServer->disconnect(param->connect.conn_id) ;//force disconnect client..
       //}
       Serial.print("Event-Connect..");Serial.println(remoteAddress);
-      ds1="R:";ds2="S:"; //вывод на дисплей
+      ds1="R:";ds2="S:";disp_show(); //вывод на дисплей
       deviceConnected = true;
     };
 
     void onDisconnect(BLEServer* pServer) {
       deviceConnected = false;
       Serial.println("Event-Disconnect..");
-      ds1="BLE: WAIT";ds2="CONNECT"; //вывод на дисплей
+      ds1="BLE: WAIT";ds2="CONNECT"; disp_show();//вывод на дисплей
       delay(300); // give the bluetooth stack the chance to get things ready
       BLEDevice::startAdvertising();  // restart advertising
     }
@@ -85,12 +86,12 @@ class MyCallbacks: public BLECharacteristicCallbacks {
             //печатаем строку от BLE
             String pstr = String(rxValue.c_str());
             Serial.print("BLE received Value: ");Serial.print(pstr);
-            ds1="R:"+pstr; //вывод на дисплей
+            ds1="R:"+pstr; disp_show();//вывод на дисплей
             
             // Do stuff based on the command received from the app
             if (pstr=="at"||pstr=="at\r\n") {     //at
                 ble_handle_tx("OK"); //sensor number
-                ds2="S:OK"; //вывод на дисплей
+                ds2="S:OK";disp_show(); //вывод на дисплей
             }
             else if (pstr=="at?"||pstr=="at?\r\n") { //at? - help
                 help_print();
@@ -106,8 +107,9 @@ class MyCallbacks: public BLECharacteristicCallbacks {
                 ble_handle_tx(s); //information for debug
             }
             else if (pstr=="atv"||pstr=="atv\r\n") { //atv - result voltage
-                ble_handle_tx(String(real_voltage,3)); //ответ c учетом калибровки
-                ds2="S:"+String(real_voltage,3); //вывод на дисплей
+                String rv = String(real_voltage,3);
+                ble_handle_tx(rv); //ответ c учетом калибровки
+                ds2="S:"+rv;disp_show(); //вывод на дисплей
             }
             else if (pstr.substring(0,4)=="atu=") {  //atu= - attenuator calibration
                 storage_factor_u(pstr.substring(4));
@@ -124,7 +126,7 @@ class MyCallbacks: public BLECharacteristicCallbacks {
             else if (pstr.substring(0,4)=="atn=") { //atn= - dev_name save NVRAM
                 storage_dev_name(pstr.substring(4)); //dev_name
             }
-            else {ble_handle_tx("???");ds2="S:???";}
+            else {ble_handle_tx("???");ds2="S:???";disp_show();}
             
         }
     }

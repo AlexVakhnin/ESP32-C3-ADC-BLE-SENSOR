@@ -66,7 +66,7 @@ void setup() {
   Serial.println("ADC_PIN= "+String(sens_pin));
 
   ble_setup(); //start BLE server
-  ds1="BLE: WAIT";ds2="CONNECT";
+  ds1="BLE: WAIT";ds2="CONNECT";disp_show();
   Serial.println("-----------------------------------------"); 
 }
 
@@ -107,7 +107,7 @@ void alarm_blink(){
       delay(120);
       digitalWrite(8, HIGH);
   }
-disp_show();
+//disp_show();
 }
 
 // relay control logic processing
