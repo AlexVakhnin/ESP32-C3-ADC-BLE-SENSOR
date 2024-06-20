@@ -155,7 +155,7 @@ void ble_setup(){
   adc_calibr = preferences.getDouble("adc_calibr", 3.01);//default adc_calibr=3.01 Volt !!!
   alarm_h = preferences.getFloat("alarm_h", 14.4);
   alarm_l = preferences.getFloat("alarm_l", 11.0);
-  dev_name = preferences.getString("dev_name", "ADC-SENSOR#1");
+  dev_name = preferences.getString("dev_name", "ADC-SENSOR#0");
   preferences.end(); //закрываем NVRAM
 
   // Create the BLE Device
