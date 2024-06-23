@@ -1,7 +1,7 @@
 ### Links:  
 **Schematic:** [sensor-schem](/Help/sensor-schem.png)
-**Breadboard:** [sensor_bb](/Help/sensor_bb.png)
-**Client for 4 sensors:** [ESP32-S3-BLE-CLIENT-4S](https://github.com/AlexVakhnin/ESP32-S3-BLE-CLIENT-4S)
+**Breadboard:** [sensor_bb](/Help/sensor_bb.png)<br />
+**Client for 4 sensors:** [ESP32-S3-BLE-CLIENT-4S](https://github.com/AlexVakhnin/ESP32-S3-BLE-CLIENT-4S)<br />
 **Linux testing:** [linux-bluetoothctl](/Help/linux-bluetoothctl.txt)
 ### The device has been tested using programs:
 ![andr-client1](/Help/andr-client1.png)
