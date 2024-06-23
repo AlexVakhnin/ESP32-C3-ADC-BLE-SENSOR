@@ -1,0 +1,107 @@
+root@orangepizero3:~#
+root@orangepizero3:~#
+root@orangepizero3:~#
+root@orangepizero3:~# uname -a
+Linux orangepizero3 6.6.31-current-sunxi64 #1 SMP Fri May 17 10:02:40 UTC 2024 aarch64 GNU/Linux
+
+root@orangepizero3:~# bluetoothctl
+Agent registered
+[CHG] Controller 5B:08:FB:9C:D8:52 Pairable: yes
+
+[bluetooth]# scan on
+Discovery started
+[CHG] Controller 5B:08:FB:9C:D8:52 Discovering: yes
+[NEW] Device EC:DA:3B:BE:25:16 ADC-SENSOR#1
+[NEW] Device 7D:49:C8:D0:98:1A 7D-49-C8-D0-98-1A
+
+[bluetooth]# scan off
+[CHG] Device 7D:49:C8:D0:98:1A TxPower is nil
+[CHG] Device 7D:49:C8:D0:98:1A RSSI is nil
+[CHG] Device EC:DA:3B:BE:25:16 TxPower is nil
+[CHG] Device EC:DA:3B:BE:25:16 RSSI is nil
+[CHG] Controller 5B:08:FB:9C:D8:52 Discovering: no
+Discovery stopped
+
+[bluetooth]# connect EC:DA:3B:BE:25:16
+Attempting to connect to EC:DA:3B:BE:25:16
+[CHG] Device EC:DA:3B:BE:25:16 Connected: yes
+Connection successful
+[NEW] Primary Service (Handle 0x0000)
+        /org/bluez/hci0/dev_EC_DA_3B_BE_25_16/service0001
+        00001801-0000-1000-8000-00805f9b34fb
+        Generic Attribute Profile
+[NEW] Characteristic (Handle 0x0000)
+        /org/bluez/hci0/dev_EC_DA_3B_BE_25_16/service0001/char0002
+        00002a05-0000-1000-8000-00805f9b34fb
+        Service Changed
+[NEW] Descriptor (Handle 0x0000)
+        /org/bluez/hci0/dev_EC_DA_3B_BE_25_16/service0001/char0002/desc0004
+        00002902-0000-1000-8000-00805f9b34fb
+        Client Characteristic Configuration
+[NEW] Primary Service (Handle 0x0000)
+        /org/bluez/hci0/dev_EC_DA_3B_BE_25_16/service0028
+        450475bb-56a2-4c97-9973-301831e65a30
+        Vendor specific
+[NEW] Characteristic (Handle 0x0000)
+        /org/bluez/hci0/dev_EC_DA_3B_BE_25_16/service0028/char0029
+        d8182a40-7316-4cbf-9c6e-be507a76d775
+        Vendor specific
+[NEW] Descriptor (Handle 0x0000)
+        /org/bluez/hci0/dev_EC_DA_3B_BE_25_16/service0028/char0029/desc002b
+        00002902-0000-1000-8000-00805f9b34fb
+        Client Characteristic Configuration
+[CHG] Device EC:DA:3B:BE:25:16 UUIDs: 00001800-0000-1000-8000-00805f9b34fb
+[CHG] Device EC:DA:3B:BE:25:16 UUIDs: 00001801-0000-1000-8000-00805f9b34fb
+[CHG] Device EC:DA:3B:BE:25:16 UUIDs: 450475bb-56a2-4c97-9973-301831e65a30
+[CHG] Device EC:DA:3B:BE:25:16 ServicesResolved: yes
+[DEL] Device 7D:49:C8:D0:98:1A 7D-49-C8-D0-98-1A
+
+[ADC-SENSOR#1]# menu gatt
+Menu gatt:
+Available commands:
+-------------------
+list-attributes [dev/local]                       List attributes
+select-attribute <attribute/UUID>                 Select attribute
+attribute-info [attribute/UUID]                   Select attribute
+read [offset]                                     Read attribute value
+write <data=xx xx ...> [offset] [type]            Write attribute value
+
+[ADC-SENSOR#1]# select-attribute d8182a40-7316-4cbf-9c6e-be507a76d775
+
+[ADC-SENSOR#1:/service0028/char0029]# write "97 116 118"
+Attempting to write /org/bluez/hci0/dev_EC_DA_3B_BE_25_16/service0028/char0029
+
+[ADC-SENSOR#1:/service0028/char0029]# read
+Attempting to read /org/bluez/hci0/dev_EC_DA_3B_BE_25_16/service0028/char0029
+[CHG] Attribute /org/bluez/hci0/dev_EC_DA_3B_BE_25_16/service0028/char0029 Value:
+  35 2e 30 39 35 0d 0a                             5.095..
+  35 2e 30 39 35 0d 0a                             5.095..
+
+[ADC-SENSOR#1:/service0028/char0029]# write "97 116"
+Attempting to write /org/bluez/hci0/dev_EC_DA_3B_BE_25_16/service0028/char0029
+
+[ADC-SENSOR#1:/service0028/char0029]# read
+Attempting to read /org/bluez/hci0/dev_EC_DA_3B_BE_25_16/service0028/char0029
+[CHG] Attribute /org/bluez/hci0/dev_EC_DA_3B_BE_25_16/service0028/char0029 Value:
+  4f 4b 0d 0a                                      OK..
+  4f 4b 0d 0a                                      OK..
+
+[ADC-SENSOR#1:/service0028/char0029]# back
+Menu main:
+Available commands:
+-------------------
+advertise                                         Advertise Options Submenu
+monitor                                           Advertisement Monitor Options Submenu
+scan                                              Scan Options Submenu
+gatt                                              Generic Attribute Submenu
+
+[ADC-SENSOR#1:/service0028/char0029]# disconnect
+Attempting to disconnect from EC:DA:3B:BE:25:16
+[CHG] Device EC:DA:3B:BE:25:16 ServicesResolved: no
+Successful disconnected
+[CHG] Device EC:DA:3B:BE:25:16 Connected: no
+
+[bluetooth]# exit
+root@orangepizero3:~#
+root@orangepizero3:~#
+root@orangepizero3:~#
