@@ -31,12 +31,12 @@ expect {
 	}
 }
 expect "#"
-send "gatt.select-attribute $uuid\r"
+send -- "gatt.select-attribute $uuid\r"
 expect "#"
-send "gatt.write \"97 116 118\"\r" 
+send -- "gatt.write \"97 116 118\"\r" 
 expect -re "Attempting to write|Device $dev not available"
 expect "#"
-send "gatt.read\r"
+send -- "gatt.read\r"
 expect "Value:"
 expect "                             "
 expect ".."
@@ -53,7 +53,7 @@ if {$voltage > $thold} {
 #	exec /sbin/shutdown -h now
 }
 expect "#"
-send "disconnect $dev\r"
+send -- "disconnect $dev\r"
 expect "#"
 send -- "exit\r"
 expect eof
