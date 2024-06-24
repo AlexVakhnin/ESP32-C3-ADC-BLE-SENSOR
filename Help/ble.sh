@@ -1,7 +1,7 @@
 #!/usr/bin/expect -f
 set dev "EC:DA:3B:BE:25:16"
 set uuid "d8182a40-7316-4cbf-9c6e-be507a76d775"
-set timeout 30
+set timeout 5
 set thold 5.098
 
 spawn bluetoothctl
@@ -10,7 +10,6 @@ expect "#"
 send -- "remove $dev\r"
 expect -re "Device has been removed|Device $dev not available"
 expect "#"
-sleep 2
 send -- "scan on\r"
 expect "Discovery started"
 sleep 2
@@ -19,15 +18,23 @@ expect "#"
 send -- "scan off\r"
 expect "#"
 send -- "pair $dev\r"
-expect "Attempting to pair"
+expect -re "Attempting to pair|Device $dev not available"
 expect "#"
 send -- "connect $dev\r"
-expect "Connection successful"
-expect "$uuid"
+expect {
+	"Connection successful" {expect "$uuid"}
+	"Device $dev not available" {
+		expect "#"
+		send -- "exit\r"
+		expect eof
+		exit
+	}
+}
 expect "#"
 send "gatt.select-attribute $uuid\r"
 expect "#"
 send "gatt.write \"97 116 118\"\r" 
+expect -re "Attempting to write|Device $dev not available"
 expect "#"
 send "gatt.read\r"
 expect "Value:"
@@ -43,8 +50,10 @@ if {$voltage > $thold} {
 } else {
 	puts "$voltage <= $thold"
 	puts "BAD.."
-	exec /sbin/shutdown -h now
+#	exec /sbin/shutdown -h now
 }
+expect "#"
+send "disconnect $dev\r"
 expect "#"
 send -- "exit\r"
 expect eof
