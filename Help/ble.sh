@@ -2,7 +2,7 @@
 set dev "EC:DA:3B:BE:25:16"
 set uuid "d8182a40-7316-4cbf-9c6e-be507a76d775"
 set timeout 5
-set thold 5.098
+set thold 5.101
 
 spawn bluetoothctl
 expect "Agent registered"
@@ -38,12 +38,17 @@ expect -re "Attempting to write|Device $dev not available"
 expect "#"
 send -- "gatt.read\r"
 expect "Value:"
-expect "                             "
+#expect "                             "
+expect "0d 0a"
 expect ".."
 set str $expect_out(buffer)
+expect "#"
+send -- "disconnect $dev\r"
+expect "Attempting to disconnect"
+expect "#"
+puts "Buffer is: <^$str^>"
 set lst [split $str "."]
 set voltage [lindex $lst 0].[lindex $lst 1]
-puts "The Voltage is: <$voltage>"
 if {$voltage > $thold} {
 	puts "$voltage > $thold"
 	puts "OK!"
@@ -52,8 +57,5 @@ if {$voltage > $thold} {
 	puts "BAD.."
 #	exec /sbin/shutdown -h now
 }
-expect "#"
-send -- "disconnect $dev\r"
-expect "#"
 send -- "exit\r"
 expect eof
