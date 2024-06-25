@@ -7,7 +7,7 @@
 set dev "EC:DA:3B:BE:25:16"
 set uuid "d8182a40-7316-4cbf-9c6e-be507a76d775"
 set timeout 5
-set thold 5.101
+set thold 5.1
 set now [timestamp -format {%Y-%m-%d %H:%M:%S}]
 
 log_user 0
@@ -57,8 +57,7 @@ expect "Attempting to disconnect"
 expect "#"
 log_user 1
 #puts "Buffer is: <^$str^>"
-set lst [split $str "."]
-set voltage [lindex $lst 0].[lindex $lst 1]
+set voltage [string trim $str " ."]
 if {$voltage > $thold} {
 	puts "$now $voltage > $thold  OK!"
 } else {
