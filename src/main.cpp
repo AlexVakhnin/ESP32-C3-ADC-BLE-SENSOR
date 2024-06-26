@@ -6,6 +6,8 @@
 extern void disp_show();
 extern void disp_setup();
 extern void ble_setup();
+extern void relay_control();
+extern void relay_init();
 void alarm_blink();
 void relay_control();
 
@@ -13,8 +15,6 @@ void relay_control();
 String ds1=""; //display line 1
 String ds2=""; //display line 2
 const int sens_pin = 0;//A0 for ADC0
-const int charg_pin = 20;//battery charging relay pin
-//const int supply_pin = 21;//battery supply relay pin
 
 String dev_name = "ADC-SENSOR#0"; //name of BLE service
 int sens_value = 0; //pure sensor
@@ -45,13 +45,8 @@ void setup() {
   //ADC
   pinMode(sens_pin, INPUT); // declare the sens_pin as an INPUT
 
-  //battery charging relay
-  pinMode(charg_pin, OUTPUT);
-  digitalWrite(charg_pin, HIGH); //relay = OFF
-
-  //battery supply relay
-  //pinMode(supply_pin, OUTPUT);
-  //digitalWrite(supply_pin, HIGH); //relay = OFF
+  //relay output init
+  relay_init();
 
   disp_setup();
    //инициализация прерывания (1.5 sec.)
@@ -92,6 +87,7 @@ void loop() {
   old_real_voltage=real_voltage; //after processing we can keep it as old
   delay(2000); 
 }
+
 void alarm_blink(){
   if(alarm_flag==1){
       digitalWrite(8, LOW);
@@ -110,23 +106,3 @@ void alarm_blink(){
 //disp_show();
 }
 
-// relay control logic processing
-void relay_control(){
-
-  //high thresholde event (voltage go from low to high __/-- )
-  if(real_voltage >= alarm_h && old_real_voltage < alarm_h){
-    digitalWrite(charg_pin, HIGH); //charging = OFF
-    Serial.println("....charging = OFF");
-    //delay(500); 
-    //digitalWrite(supply_pin, LOW); //supplying = ON
-  }
-  //low thresholde event (voltage go from high to low --\__ )
-  else if(real_voltage <= alarm_l && old_real_voltage > alarm_l){
-    //digitalWrite(supply_pin, HIGH); //supplying = OFF
-    //delay(500);
-    digitalWrite(charg_pin, LOW); //charging = ON
-    Serial.println("....charging = ON");
-
-  }
-  
-}
