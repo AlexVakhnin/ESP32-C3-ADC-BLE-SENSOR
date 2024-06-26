@@ -12,6 +12,7 @@ set thold 5.1
 set now [timestamp -format {%Y-%m-%d %H:%M:%S}]
 set logpref [timestamp -format {%y%m%d}]
 log_file "/root/blelog.$logpref"
+#log_file -a "/root/blelog.$logpref"
 
 log_user 0
 spawn bluetoothctl
@@ -26,9 +27,6 @@ sleep 2
 expect "Device $dev"
 expect "#"
 send -- "scan off\r"
-expect "#"
-send -- "pair $dev\r"
-expect -re "Attempting to pair|Device $dev not available"
 expect "#"
 send -- "connect $dev\r"
 expect {
