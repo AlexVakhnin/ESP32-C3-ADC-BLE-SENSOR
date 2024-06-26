@@ -1,14 +1,17 @@
 #!/usr/bin/expect -f
 #
 #  Usage with crontab:
-#  * * * * * /root/ble.sh>>/root/blelog.txt
-#
+#  * * * * * /root/ble.sh>/dev/null
+#  Log file:
+#  /root/blelog.yymmdd
 #
 set dev "EC:DA:3B:BE:25:16"
 set uuid "d8182a40-7316-4cbf-9c6e-be507a76d775"
 set timeout 5
 set thold 5.1
 set now [timestamp -format {%Y-%m-%d %H:%M:%S}]
+set logpref [timestamp -format {%y%m%d}]
+log_file "/root/blelog.$logpref"
 
 log_user 0
 spawn bluetoothctl
@@ -33,7 +36,7 @@ expect {
 	"Device $dev not available" {
 		expect "#"
 		log_user 1
-		puts "$now Sensor not found.."
+		send_user "$now Sensor not found..\n"
 		log_user 0
 		send -- "exit\r"
 		expect eof
@@ -59,9 +62,9 @@ log_user 1
 #puts "Buffer is: <^$str^>"
 set voltage [string trim $str " ."]
 if {$voltage > $thold} {
-	puts "$now $voltage > $thold  OK!"
+	send_user "$now $voltage > $thold  OK!\n"
 } else {
-	puts "$now $voltage <= $thold  BAD.."
+	send_user "$now $voltage <= $thold  Linux shutdown..\n"
 #	exec /sbin/shutdown -h now
 }
 log_user 0
