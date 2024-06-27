@@ -8,6 +8,7 @@ extern void disp_setup();
 extern void ble_setup();
 extern void relay_control();
 extern void relay_init();
+extern void disp_main();
 void alarm_blink();
 void relay_control();
 
@@ -25,9 +26,12 @@ float real_voltage =0; //measuring voltage
 float old_real_voltage=0; //contains the result of the previous measurement
 float alarm_h =11; //led alarm threshold value 1
 float alarm_l =10; //led alarm threshold value 2
-int alarm_flag = 0;
+int alarm_flag = 0; //led indicate type
+boolean ble_indicate =false; //if ble process = true
+long ble_pcounter = 0; //ble connect period counter
+long ble_period = 0; //ble connect period
 
-Ticker hTicker; //for alarm
+Ticker hTicker; //for alarm indicate
 
 void setup() {
 
@@ -61,17 +65,22 @@ void setup() {
   Serial.println("ADC_PIN= "+String(sens_pin));
 
   ble_setup(); //start BLE server
-  ds1="BLE: WAIT";ds2="CONNECT";disp_show();
-  Serial.println("-----------------------------------------"); 
+  Serial.println("-----------------------------------------");
+
+  disp_main(); //показать в начале
+ 
 }
 
 void loop() {
+
+  old_real_voltage=real_voltage; //save old voltage
 
   // read the value from the sensor:
   sens_value = analogRead(sens_pin);
   sens_voltage =sens_value*adc_calibr/4096; // calculate
   real_voltage = sens_voltage * factor; //new real voltage
 
+  ble_pcounter++;
   // relay control logic processing
   relay_control();
 
@@ -80,11 +89,15 @@ void loop() {
   else if(real_voltage > alarm_h) alarm_flag=1; //14.4V
   else alarm_flag=0;
 
+  //DEBUG..
   //Serial.print("sens_value: "+ String(sens_value));Serial.print("  sens_voltage = "+ String(sens_voltage));
   //Serial.print("  factor: "+ String(factor));Serial.println("  real_voltage = "+ String(real_voltage));
-  Serial.printf("v=%3f\r\n",real_voltage);
+  //Serial.printf("v=%3f\r\n",real_voltage);
+  //Serial.print("ble_period: "+ String(ble_period));
+  //Serial.println("  ble_pcounter: "+ String(ble_pcounter));
 
-  old_real_voltage=real_voltage; //after processing we can keep it as old
+  if(!ble_indicate) disp_main(); //показывать в перерывах между связью BLE
+
   delay(2000); 
 }
 

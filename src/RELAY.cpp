@@ -10,29 +10,38 @@ extern float alarm_h;
 extern float alarm_l;
 
 //Variables
-const int charg_pin = 20;//battery charging relay pin
+const int orange_pin = 20;//battery charging relay pin
 
 
 //relay output init
 void relay_init(){
 
-  pinMode(charg_pin, OUTPUT);
-  digitalWrite(charg_pin, HIGH); //relay = OFF
+  pinMode(orange_pin, OUTPUT);
+  digitalWrite(orange_pin, HIGH); //relay = OFF
 }
 
-// relay control logic processing
+// relay control logic processing (for Orange Pi to right restarting..)
 void relay_control(){
 
-  //high thresholde event (voltage go from low to high __/-- )
+  //high threshold event (voltage go from low to high __/-- )
   if(real_voltage >= alarm_h && old_real_voltage < alarm_h){
-    digitalWrite(charg_pin, HIGH); //charging = OFF
-    Serial.println("....charging = OFF");
+    //digitalWrite(orange_pin, HIGH);
+    Serial.println("....rizing near HIGHT");
   }
-  //low thresholde event (voltage go from high to low --\__ )
+  //low threshold event (voltage go from high to low --\__ )
   else if(real_voltage <= alarm_l && old_real_voltage > alarm_l){
-    digitalWrite(charg_pin, LOW); //charging = ON
-    Serial.println("....charging = ON");
+    //digitalWrite(orange_pin, LOW);
+    Serial.println("....failing near LOW");
 
+  }
+  else if(real_voltage < alarm_l && old_real_voltage < alarm_l){
+    //Serial.println("....high zone");
+  }
+  else if(real_voltage > alarm_l && old_real_voltage > alarm_l){
+    //Serial.println("....low zone");
+
+  } else {
+    //Serial.println("....middle zone");
   }
   
 }

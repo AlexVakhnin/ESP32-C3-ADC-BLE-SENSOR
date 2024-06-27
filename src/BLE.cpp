@@ -15,6 +15,7 @@ void storage_dev_name(String dname);
 void help_print();
 void reset_nvram();
 extern void disp_show();
+extern void disp_main();
 //Global Variables
 extern String ds1;
 extern String ds2;
@@ -26,7 +27,9 @@ extern double factor; //(nvram)
 extern double adc_calibr; //(nvram)
 extern float alarm_h; //(nvram)
 extern float alarm_l; //(nvram)
-
+extern boolean ble_indicate;
+extern long ble_pcounter;
+extern long ble_period;
 
 BLEServer* pServer = NULL;
 BLECharacteristic* pCharacteristic = NULL;
@@ -64,6 +67,7 @@ class MyServerCallbacks: public BLEServerCallbacks {
       //    pServer->disconnect(param->connect.conn_id) ;//force disconnect client..
       //}
       Serial.print("Event-Connect..");Serial.println(remoteAddress);
+      ble_indicate = true; //захват дисплея
       ds1="R:";ds2="S:";disp_show(); //вывод на дисплей
       deviceConnected = true;
     };
@@ -71,7 +75,10 @@ class MyServerCallbacks: public BLEServerCallbacks {
     void onDisconnect(BLEServer* pServer) {
       deviceConnected = false;
       Serial.println("Event-Disconnect..");
-      ds1="BLE: WAIT";ds2="CONNECT"; disp_show();//вывод на дисплей
+      ble_period=ble_pcounter; //время между BLE опросами
+      ble_pcounter=0;
+      disp_main(); //обмен BLE закончен, показать основной экран
+      ble_indicate = false; //отпускаем дисплей
       delay(300); // give the bluetooth stack the chance to get things ready
       BLEDevice::startAdvertising();  // restart advertising
     }
@@ -213,7 +220,7 @@ void ble_handle_tx(String str){
         //pCharacteristic->indicate();//для работы с BLE терминалом !!!!!!!
         pCharacteristic->notify(false); //false=indicate; true=wait confirmation
 
-        Serial.print("Send to BLE client: "+str);
+        Serial.print("--Send to BLE client: "+str);
     }
 
 }
