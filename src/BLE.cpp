@@ -5,8 +5,9 @@
 #include <BLE2902.h>
 #include <Preferences.h>
 
+const int orange_pin = 20;
+
 //Declaration
-//void storage_factor(String sfact);
 void storage_factor_u(String su);
 void storage_adc_u(String su);
 void storage_alarm_h(String su);
@@ -30,6 +31,9 @@ extern float alarm_l; //(nvram)
 extern boolean ble_indicate;
 extern long ble_pcounter;
 extern long ble_period;
+extern boolean doShutdown;
+extern boolean doPowerOn;
+extern String dispstatus;
 
 BLEServer* pServer = NULL;
 BLECharacteristic* pCharacteristic = NULL;
@@ -107,8 +111,11 @@ class MyCallbacks: public BLECharacteristicCallbacks {
                 reset_nvram();
             }            
             else if (pstr=="ati"||pstr=="ati\r\n") { //ati - information
-              String s ="name="+dev_name+"\r\nalarm_h="+String(alarm_h)+"\r\nalarm_l="+String(alarm_l)+  
-                  +"\r\nsens_pure="+String(sens_value)+"\r\nadc_calibr="+String(adc_calibr)
+              String s ="name="+dev_name+"\r\ntimeout="+String(ble_pcounter)
+                  +"\r\nstatus="+dispstatus+"\r\nrelay="+String(digitalRead(orange_pin))
+                  +"\r\nalarm_h="+String(alarm_h)+"\r\nalarm_l="+String(alarm_l) 
+                  //+"\r\nsens_pure="+String(sens_value)
+                  //+"\r\nadc_calibr="+String(adc_calibr)
                   +"\r\nsens_voltage="+String(sens_voltage)                 
                   +"\r\natt_factor="+String(factor)+"\r\nreal_voltage="+String(real_voltage);
                 ble_handle_tx(s); //information for debug
@@ -132,6 +139,20 @@ class MyCallbacks: public BLECharacteristicCallbacks {
             }
             else if (pstr.substring(0,4)=="atn=") { //atn= - dev_name save NVRAM
                 storage_dev_name(pstr.substring(4)); //dev_name
+            }
+            else if (pstr=="shutdown"||pstr=="shutdown\r\n") { //relay off
+                ble_handle_tx("DO POWER OFF"); //to BLE terminal
+                dispstatus = "DPO";
+                ble_pcounter=0;//дополнительно сбросим на всякий случай
+                ds2="S:DPO";disp_show(); //вывод на дисплей
+                doShutdown = true; //выключить питание с задержкой
+            }
+            else if (pstr=="poweron"||pstr=="poweron\r\n") { //relay off
+                ble_handle_tx("DO POWER ON"); //to BLE terminal
+                dispstatus = "WCH"; //wait baterry charging
+                ds2="S:DO PON";disp_show(); //вывод на дисплей
+                doShutdown = false; //отмена dhutdown
+                doPowerOn = true; //включить питание, если АКБ заряжен
             }
             else {ble_handle_tx("???");ds2="S:???";disp_show();}
             

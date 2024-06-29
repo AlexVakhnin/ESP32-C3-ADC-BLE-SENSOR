@@ -16,6 +16,7 @@ extern String ds2;
 extern float real_voltage;
 extern long ble_pcounter;
 extern long ble_period;
+extern String dispstatus;
 
 // Declaration for an SSD1306 display connected to I2C (SDA, SCL pins)
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
@@ -42,7 +43,7 @@ void disp_show(){
 }
 //показать основной экран
 void disp_main(){
-  ds1="VT: "+String(real_voltage,3);
+  ds1=dispstatus+": "+String(real_voltage,3);
   int per =0;
   if (ble_period>=99) {per=99;} else {per=ble_period;}
   ds2=String(per)+" "+String(ble_pcounter);

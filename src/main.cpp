@@ -30,6 +30,10 @@ int alarm_flag = 0; //led indicate type
 boolean ble_indicate =false; //if ble process = true
 long ble_pcounter = 0; //ble connect period counter
 long ble_period = 0; //ble connect period
+boolean doShutdown =false; //for shutdown handling
+boolean doPowerOn =false; // for power on handling
+String dispstatus = "WCH"; //status on display
+
 
 Ticker hTicker; //for alarm indicate
 
