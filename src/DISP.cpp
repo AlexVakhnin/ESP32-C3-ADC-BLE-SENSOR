@@ -8,6 +8,9 @@
 #define SCREEN_HEIGHT 32 // OLED display height, in pixels
 #define OLED_RESET     -1 // Reset pin # (or -1 if sharing Arduino reset pin)
 
+//const int orange_pin = 20;
+extern int orange_pin;
+
 //Function Declaration
 void disp_show();
 void disp_setup();
@@ -17,6 +20,7 @@ extern float real_voltage;
 extern long ble_pcounter;
 extern long ble_period;
 extern String dispstatus;
+extern int alarm_flag;
 
 // Declaration for an SSD1306 display connected to I2C (SDA, SCL pins)
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
@@ -44,8 +48,15 @@ void disp_show(){
 //показать основной экран
 void disp_main(){
   ds1=dispstatus+": "+String(real_voltage,3);
+
   int per =0;
+  int pco =0;
   if (ble_period>=99) {per=99;} else {per=ble_period;}
-  ds2=String(per)+" "+String(ble_pcounter);
+  if (ble_pcounter>=99999) {pco=99999;} else {pco=ble_pcounter;}
+
+  String zone ="";
+  if(alarm_flag=1) {zone ="H";} else if(alarm_flag=2) {zone ="L";} else {zone ="M";}
+
+  ds2=String(digitalRead(orange_pin))+zone+" "+String(per)+" "+String(pco);
   disp_show();
 }

@@ -5,7 +5,8 @@
 #include <BLE2902.h>
 #include <Preferences.h>
 
-const int orange_pin = 20;
+//const int orange_pin = 20;
+extern int orange_pin;
 
 //Declaration
 void storage_factor_u(String su);
@@ -142,15 +143,15 @@ class MyCallbacks: public BLECharacteristicCallbacks {
             }
             else if (pstr=="shutdown"||pstr=="shutdown\r\n") { //relay off
                 ble_handle_tx("DO POWER OFF"); //to BLE terminal
-                dispstatus = "DPO";
+                dispstatus = "WOF"; //wait timmer value
                 ble_pcounter=0;//дополнительно сбросим на всякий случай
                 ds2="S:DPO";disp_show(); //вывод на дисплей
                 doShutdown = true; //выключить питание с задержкой
             }
             else if (pstr=="poweron"||pstr=="poweron\r\n") { //relay off
                 ble_handle_tx("DO POWER ON"); //to BLE terminal
-                dispstatus = "WCH"; //wait baterry charging
-                ds2="S:DO PON";disp_show(); //вывод на дисплей
+                dispstatus = "WON"; //wait baterry charging
+                ds2="S:DO ON";disp_show(); //вывод на дисплей
                 doShutdown = false; //отмена dhutdown
                 doPowerOn = true; //включить питание, если АКБ заряжен
             }
@@ -305,6 +306,8 @@ void help_print(){
           shelp+="\r\nath=[U] -alarm H Voltage";
           shelp+="\r\natl=[U] -alarm L Voltage";
           shelp+="\r\natn=[name] -BLE device name";
+          shelp+="\r\ndhutdown -orange pi shutdown";
+          shelp+="\r\npoweron -orange pi power on";
   ble_handle_tx(shelp);
 }
 void reset_nvram(){

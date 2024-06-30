@@ -2,6 +2,8 @@
 #include <Ticker.h>
 //#include <nvs_flash.h> //для стирания всего NVRAM
 
+#define ORANGE_RELAY_PIN 20
+
 //Function Declaration
 extern void disp_show();
 extern void disp_setup();
@@ -16,6 +18,7 @@ void relay_control();
 String ds1=""; //display line 1
 String ds2=""; //display line 2
 const int sens_pin = 0;//A0 for ADC0
+int orange_pin = ORANGE_RELAY_PIN;
 
 String dev_name = "ADC-SENSOR#0"; //name of BLE service
 int sens_value = 0; //pure sensor
@@ -32,7 +35,7 @@ long ble_pcounter = 0; //ble connect period counter
 long ble_period = 0; //ble connect period
 boolean doShutdown =false; //for shutdown handling
 boolean doPowerOn =false; // for power on handling
-String dispstatus = "WCH"; //status on display
+String dispstatus = "WON"; //status on display
 
 
 Ticker hTicker; //for alarm indicate

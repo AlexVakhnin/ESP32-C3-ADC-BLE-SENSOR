@@ -14,8 +14,8 @@ extern String dispstatus;
 extern boolean doPowerOn;
 
 //Variables
-const int orange_pin = 20;//battery charging relay pin
-
+//const int orange_pin = ORANGE_RELAY_PIN;//battery charging relay pin
+extern int orange_pin;
 
 //relay output init
 void relay_init(){
@@ -37,19 +37,15 @@ void relay_control(){
 
   }
   //low threshold event (voltage go from high to low --\__ )
+  //критически низкий уровень для аккумулятора !!!
   else if(real_voltage <= alarm_l && old_real_voltage > alarm_l){
-    //digitalWrite(orange_pin, LOW);
     Serial.println("....failing near LOW");
-
-  }
-  else if(real_voltage < alarm_l && old_real_voltage < alarm_l){
-    //Serial.println("....high zone");
-  }
-  else if(real_voltage > alarm_h && old_real_voltage > alarm_h){
-    //Serial.println("....low zone");
-
-  } else {
-    //Serial.println("....middle zone");
+    //проверка, если реле включено, тогда просто выключанм его..
+    if(digitalRead(orange_pin)==0){
+      ble_pcounter=0;
+      dispstatus = "WOF";
+      doShutdown = true;
+    }
   }
 
   //shutdown handling
@@ -62,9 +58,9 @@ void relay_control(){
   //power on handling, if the battery is charged
   if (doPowerOn && real_voltage>alarm_h && old_real_voltage > alarm_h){
     digitalWrite(orange_pin, LOW); //relay = ON
-    dispstatus = "PON";
+    dispstatus = "ON ";
     doPowerOn=false;
-    Serial.println("Event-PowerOn: "+String(ble_pcounter));
+    Serial.println("Event-PowerOn..");
   }
   //DEBUG
   //Serial.println("Relay: "+String(digitalRead(orange_pin)));
