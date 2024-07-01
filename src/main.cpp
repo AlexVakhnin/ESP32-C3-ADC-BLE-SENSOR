@@ -102,6 +102,7 @@ void loop() {
   //Serial.printf("v=%3f\r\n",real_voltage);
   //Serial.print("ble_period: "+ String(ble_period));
   //Serial.println("  ble_pcounter: "+ String(ble_pcounter));
+  //Serial.println("alarm_flag: "+ String(alarm_flag));
 
   if(!ble_indicate) disp_main(); //показывать в перерывах между связью BLE
 

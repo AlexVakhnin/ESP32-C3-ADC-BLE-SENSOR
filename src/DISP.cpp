@@ -55,7 +55,8 @@ void disp_main(){
   if (ble_pcounter>=99999) {pco=99999;} else {pco=ble_pcounter;}
 
   String zone ="";
-  if(alarm_flag=1) {zone ="H";} else if(alarm_flag=2) {zone ="L";} else {zone ="M";}
+  //Serial.println("alarm_flag: "+ String(alarm_flag));
+  if(alarm_flag==1) {zone ="H";} else if(alarm_flag==2) {zone ="L";} else {zone ="M";}
 
   ds2=String(digitalRead(orange_pin))+zone+" "+String(per)+" "+String(pco);
   disp_show();
