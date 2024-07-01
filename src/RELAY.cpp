@@ -1,5 +1,8 @@
 #include <Arduino.h>
 
+#define RELAY_ON 0x0
+#define RELAY_OFF 0x1
+
 //Global Variables
 //extern String ds1;
 //extern String ds2;
@@ -21,7 +24,7 @@ extern int orange_pin;
 void relay_init(){
 
   pinMode(orange_pin, OUTPUT);
-  digitalWrite(orange_pin, HIGH); //relay = OFF
+  digitalWrite(orange_pin, RELAY_OFF); //relay = OFF
   doPowerOn=true; //ожидание зарядки и включение питания
 }
 
@@ -30,18 +33,18 @@ void relay_control(){
 
   //high threshold event (voltage go from low to high __/-- )
   if(real_voltage >= alarm_h && old_real_voltage < alarm_h){
-    Serial.println("....rizing near HIGHT");
+    Serial.println("Event- TO HIGHT..");
     //проверка, если реле выключено, тогда просто включанм его..
-    if(digitalRead(orange_pin)==1)
+    if(digitalRead(orange_pin)==RELAY_OFF)
       doPowerOn=true; //ожидание зарядки и включение питания
 
   }
   //low threshold event (voltage go from high to low --\__ )
   //критически низкий уровень для аккумулятора !!!
   else if(real_voltage <= alarm_l && old_real_voltage > alarm_l){
-    Serial.println("....failing near LOW");
+    Serial.println("Event- TO LOW..");
     //проверка, если реле включено, тогда просто выключанм его..
-    if(digitalRead(orange_pin)==0){
+    if(digitalRead(orange_pin)==RELAY_ON){
       ble_pcounter=0;
       dispstatus = "WOF";
       doShutdown = true;
@@ -50,14 +53,14 @@ void relay_control(){
 
   //shutdown handling
   if (doShutdown && ble_pcounter>9){
-    digitalWrite(orange_pin, HIGH); //relay = OFF
+    digitalWrite(orange_pin, RELAY_OFF); //relay = OFF
     dispstatus = "OFF";
     doShutdown=false;
     Serial.println("Event-Shutdown: "+String(ble_pcounter));
   }
   //power on handling, if the battery is charged
   if (doPowerOn && real_voltage>alarm_h && old_real_voltage > alarm_h){
-    digitalWrite(orange_pin, LOW); //relay = ON
+    digitalWrite(orange_pin, RELAY_ON); //relay = ON
     dispstatus = "ON ";
     doPowerOn=false;
     Serial.println("Event-PowerOn..");
