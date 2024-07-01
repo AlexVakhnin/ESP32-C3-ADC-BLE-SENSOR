@@ -114,7 +114,7 @@ class MyCallbacks: public BLECharacteristicCallbacks {
             }            
             else if (pstr=="ati"||pstr=="ati\r\n") { //ati - information
               String zone="";
-              if(alarm_flag=1) {zone ="HIGH";} else if(alarm_flag=2) {zone ="LOW";} else {zone ="MIDDLE";}
+              if(alarm_flag==1) {zone ="HIGH";} else if(alarm_flag==2) {zone ="LOW";} else {zone ="MIDDLE";}
               String s ="name="+dev_name
                   +"\r\ntimeout="+String(ble_pcounter)
                   +"\r\nstatus="+dispstatus
