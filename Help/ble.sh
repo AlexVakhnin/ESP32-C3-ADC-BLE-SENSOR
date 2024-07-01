@@ -8,7 +8,7 @@
 set dev "EC:DA:3B:BE:25:16"
 set uuid "d8182a40-7316-4cbf-9c6e-be507a76d775"
 set timeout 5
-set thold 5.1
+set thold 5.2
 set now [timestamp -format {%Y-%m-%d %H:%M:%S}]
 set logpref [timestamp -format {%y%m%d}]
 log_file "/root/blelog.$logpref"
@@ -52,19 +52,26 @@ expect "Value:"
 expect "0d 0a"
 expect ".."
 set str $expect_out(buffer)
-expect "#"
-send -- "disconnect $dev\r"
-expect "Attempting to disconnect"
-expect "#"
 log_user 1
 #puts "Buffer is: <^$str^>"
 set voltage [string trim $str " ."]
 if {$voltage > $thold} {
 	send_user "$now $voltage > $thold  OK!\n"
+	log_user 0
+	expect "#"
+	send -- "disconnect $dev\r"
+	expect "Attempting to disconnect"
 } else {
 	send_user "$now $voltage <= $thold  Linux shutdown..\n"
-#	exec /sbin/shutdown -h now
+	log_user 0
+	expect "#"
+	send -- "gatt.write \"115 104 117 116 100 111 119 110\"\r" 
+	expect -re "Attempting to write|Device $dev not available"
+	expect "#"
+	send -- "disconnect $dev\r"
+	expect "Attempting to disconnect"
+	#	exec /sbin/shutdown -h now
 }
-log_user 0
+expect "#"
 send -- "exit\r"
 expect eof
