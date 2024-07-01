@@ -35,6 +35,7 @@ extern long ble_period;
 extern boolean doShutdown;
 extern boolean doPowerOn;
 extern String dispstatus;
+extern int alarm_flag;
 
 BLEServer* pServer = NULL;
 BLECharacteristic* pCharacteristic = NULL;
@@ -112,13 +113,24 @@ class MyCallbacks: public BLECharacteristicCallbacks {
                 reset_nvram();
             }            
             else if (pstr=="ati"||pstr=="ati\r\n") { //ati - information
-              String s ="name="+dev_name+"\r\ntimeout="+String(ble_pcounter)
-                  +"\r\nstatus="+dispstatus+"\r\nrelay="+String(digitalRead(orange_pin))
-                  +"\r\nalarm_h="+String(alarm_h)+"\r\nalarm_l="+String(alarm_l) 
-                  //+"\r\nsens_pure="+String(sens_value)
-                  //+"\r\nadc_calibr="+String(adc_calibr)
+              String zone="";
+              if(alarm_flag=1) {zone ="HIGH";} else if(alarm_flag=2) {zone ="LOW";} else {zone ="MIDDLE";}
+              String s ="name="+dev_name
+                  +"\r\ntimeout="+String(ble_pcounter)
+                  +"\r\nstatus="+dispstatus
+                  +"\r\nzone="+zone
+                  +"\r\nrelay="+String(digitalRead(orange_pin))
+                  +"\r\nalarm_h="+String(alarm_h)
+                  +"\r\nalarm_l="+String(alarm_l) 
+                  +"\r\nreal_voltage="+String(real_voltage);
+                ble_handle_tx(s); //information for debug
+            }
+            else if (pstr=="atc"||pstr=="atc\r\n") { //atc - calibration information
+              String s ="sens_pure="+String(sens_value)
+                  +"\r\nadc_calibr="+String(adc_calibr)
                   +"\r\nsens_voltage="+String(sens_voltage)                 
-                  +"\r\natt_factor="+String(factor)+"\r\nreal_voltage="+String(real_voltage);
+                  +"\r\natt_factor="+String(factor)
+                  +"\r\nreal_voltage="+String(real_voltage);
                 ble_handle_tx(s); //information for debug
             }
             else if (pstr=="atv"||pstr=="atv\r\n") { //atv - result voltage
@@ -299,6 +311,7 @@ void storage_dev_name(String dname){
 
 void help_print(){
   String  shelp="ati -parameter list";
+          shelp+="\r\natс -calibration parameter list";
           shelp+="\r\natv -resulting voltage";
           shelp+="\r\natz -set default parameters";
           shelp+="\r\nata=[U_ADC_in] -ADC calibration";
