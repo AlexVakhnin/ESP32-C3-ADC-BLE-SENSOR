@@ -20,7 +20,7 @@ extern float real_voltage;
 extern long ble_pcounter;
 extern long ble_period;
 extern String dispstatus;
-extern int alarm_flag;
+extern int zone_flag;
 
 // Declaration for an SSD1306 display connected to I2C (SDA, SCL pins)
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
@@ -55,8 +55,8 @@ void disp_main(){
   if (ble_pcounter>=99999) {pco=99999;} else {pco=ble_pcounter;}
 
   String zone ="";
-  //Serial.println("alarm_flag: "+ String(alarm_flag));
-  if(alarm_flag==1) {zone ="H";} else if(alarm_flag==2) {zone ="L";} else {zone ="M";}
+  //Serial.println("zone_flag: "+ String(zone_flag));
+  if(zone_flag==1) {zone ="H";} else if(zone_flag==2) {zone ="L";} else {zone ="M";}
 
   ds2=String(digitalRead(orange_pin))+zone+" "+String(per)+" "+String(pco);
   disp_show();

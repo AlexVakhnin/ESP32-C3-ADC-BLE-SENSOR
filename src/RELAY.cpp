@@ -1,11 +1,10 @@
 #include <Arduino.h>
 
-#define RELAY_ON 0x0
-#define RELAY_OFF 0x1
-
-//Global Variables
-//extern String ds1;
-//extern String ds2;
+#define RELAY_ON 1
+#define RELAY_OFF 0
+#define ZONE_HIGH 1
+#define ZONE_MIDDLE 0
+#define ZONE_LOW 2
 
 extern float real_voltage;
 extern float old_real_voltage;
@@ -15,6 +14,8 @@ extern boolean doShutdown;
 extern long ble_pcounter;
 extern String dispstatus;
 extern boolean doPowerOn;
+extern int zone_flag;
+extern int old_zone_flag;
 
 //Variables
 //const int orange_pin = ORANGE_RELAY_PIN;//battery charging relay pin
@@ -31,19 +32,18 @@ void relay_init(){
 // relay control logic processing (for Orange Pi to right restarting..)
 void relay_control(){
 
-  //high threshold event (voltage go from low to high __/-- )
-  if(real_voltage >= alarm_h && old_real_voltage < alarm_h){
-    Serial.println("Event- TO HIGHT..");
-    //проверка, если реле выключено, тогда просто включанм его..
-    if(digitalRead(orange_pin)==RELAY_OFF)
+  //переход на заряд достаточный для включения питания
+  if(old_zone_flag == ZONE_MIDDLE && zone_flag ==ZONE_HIGH){
+    Serial.println("Event- TO HIGH..");
+    //проверка, если реле выключено, тогда включанм его..
+    if(digitalRead(orange_pin)==RELAY_OFF){
       doPowerOn=true; //ожидание зарядки и включение питания
-
+    }
   }
-  //low threshold event (voltage go from high to low --\__ )
-  //критически низкий уровень для аккумулятора !!!
-  else if(real_voltage <= alarm_l && old_real_voltage > alarm_l){
+  //переход на критически низкий уровень для аккумулятора !!!
+  else if(old_zone_flag == ZONE_MIDDLE && zone_flag ==ZONE_LOW){
     Serial.println("Event- TO LOW..");
-    //проверка, если реле включено, тогда просто выключанм его..
+    //проверка, если реле включено, тогда выключанм его..
     if(digitalRead(orange_pin)==RELAY_ON){
       ble_pcounter=0;
       dispstatus = "WOF";
@@ -58,8 +58,8 @@ void relay_control(){
     doShutdown=false;
     Serial.println("Event-Shutdown: "+String(ble_pcounter));
   }
-  //power on handling, if the battery is charged
-  if (doPowerOn && real_voltage>alarm_h && old_real_voltage > alarm_h){
+  //power on handling
+  if (doPowerOn && zone_flag ==ZONE_HIGH){
     digitalWrite(orange_pin, RELAY_ON); //relay = ON
     dispstatus = "ON ";
     doPowerOn=false;

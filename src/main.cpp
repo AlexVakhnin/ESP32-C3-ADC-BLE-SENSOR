@@ -29,7 +29,8 @@ float real_voltage =0; //measuring voltage
 float old_real_voltage=0; //contains the result of the previous measurement
 float alarm_h =11; //led alarm threshold value 1
 float alarm_l =10; //led alarm threshold value 2
-int alarm_flag = 0; //led indicate type
+int zone_flag = 0; //current voltage zone
+int old_zone_flag = 0; //old voltage zone
 boolean ble_indicate =false; //if ble process = true
 long ble_pcounter = 0; //ble connect period counter
 long ble_period = 0; //ble connect period
@@ -91,10 +92,11 @@ void loop() {
   // relay control logic processing
   relay_control();
 
-  //alarms
-  if     (real_voltage < alarm_l) alarm_flag=2; //11V
-  else if(real_voltage > alarm_h) alarm_flag=1; //14.4V
-  else alarm_flag=0;
+  //voltage zone..
+  old_zone_flag = zone_flag;
+  if     (real_voltage < alarm_l) zone_flag=2; //11V
+  else if(real_voltage > alarm_h) zone_flag=1; //14.4V
+  else zone_flag=0;
 
   //DEBUG..
   //Serial.print("sens_value: "+ String(sens_value));Serial.print("  sens_voltage = "+ String(sens_voltage));
@@ -102,7 +104,7 @@ void loop() {
   //Serial.printf("v=%3f\r\n",real_voltage);
   //Serial.print("ble_period: "+ String(ble_period));
   //Serial.println("  ble_pcounter: "+ String(ble_pcounter));
-  //Serial.println("alarm_flag: "+ String(alarm_flag));
+  //Serial.println("zone_flag: "+ String(zone_flag));
 
   if(!ble_indicate) disp_main(); //показывать в перерывах между связью BLE
 
@@ -110,12 +112,12 @@ void loop() {
 }
 
 void alarm_blink(){
-  if(alarm_flag==1){
+  if(zone_flag==1){
       digitalWrite(8, LOW);
       delay(120);
       digitalWrite(8, HIGH);
   }
-  else if (alarm_flag==2){
+  else if (zone_flag==2){
       digitalWrite(8, LOW);
       delay(120);
       digitalWrite(8, HIGH);

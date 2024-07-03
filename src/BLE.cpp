@@ -35,7 +35,7 @@ extern long ble_period;
 extern boolean doShutdown;
 extern boolean doPowerOn;
 extern String dispstatus;
-extern int alarm_flag;
+extern int zone_flag;
 
 BLEServer* pServer = NULL;
 BLECharacteristic* pCharacteristic = NULL;
@@ -114,7 +114,7 @@ class MyCallbacks: public BLECharacteristicCallbacks {
             }            
             else if (pstr=="ati"||pstr=="ati\r\n") { //ati - information
               String zone="";
-              if(alarm_flag==1) {zone ="HIGH";} else if(alarm_flag==2) {zone ="LOW";} else {zone ="MIDDLE";}
+              if(zone_flag==1) {zone ="HIGH";} else if(zone_flag==2) {zone ="LOW";} else {zone ="MIDDLE";}
               String s ="name="+dev_name
                   +"\r\ntimeout="+String(ble_pcounter)
                   +"\r\nstatus="+dispstatus
