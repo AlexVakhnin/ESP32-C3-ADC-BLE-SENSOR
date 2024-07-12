@@ -45,10 +45,19 @@ void relay_control(){
     Serial.println("Event- TO LOW..");
     //проверка, если реле включено, тогда выключанм его..
     if(digitalRead(orange_pin)==RELAY_ON){
-      ble_pcounter=0;
-      dispstatus = "WOF";
-      doShutdown = true;
+      //ble_pcounter=0;
+      //dispstatus = "WOF";
+      //doShutdown = true;
+      digitalWrite(orange_pin, RELAY_OFF); //relay = OFF
+      dispstatus = "OFF";
+      doShutdown=false;
+      Serial.println("Сritically low level..RELAY OFF");
     }
+  }
+  //Дополнительная проверка..
+  if(zone_flag ==ZONE_LOW && digitalRead(orange_pin)==RELAY_ON){
+    digitalWrite(orange_pin, RELAY_OFF); //relay = OFF
+    Serial.println("Сritically low level..RELAY OFF (CHECK ERROR..)");
   }
 
   //shutdown handling
