@@ -5,9 +5,12 @@
 #define ZONE_HIGH 1
 #define ZONE_MIDDLE 0
 #define ZONE_LOW 2
+#define AC_220V_ON 7
 
 extern float real_voltage;
+extern float real1_voltage;
 extern float old_real_voltage;
+extern float old_real1_voltage;
 extern float alarm_h;
 extern float alarm_l;
 extern boolean doShutdown;
@@ -68,7 +71,7 @@ void relay_control(){
     Serial.println("Event-Shutdown: "+String(ble_pcounter));
   }
   //power on handling
-  if (doPowerOn && zone_flag ==ZONE_HIGH){
+  if (doPowerOn && zone_flag == ZONE_HIGH && real1_voltage > AC_220V_ON && old_real1_voltage > AC_220V_ON){ //AC 220v ON !!!
     digitalWrite(orange_pin, RELAY_ON); //relay = ON
     dispstatus = "ON ";
     doPowerOn=false;

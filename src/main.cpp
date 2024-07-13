@@ -18,15 +18,21 @@ void relay_control();
 String ds1=""; //display line 1
 String ds2=""; //display line 2
 const int sens_pin = 0;//A0 for ADC0
+const int sens1_pin = 1;//A1 for ADC1
 int orange_pin = ORANGE_RELAY_PIN;
 
 String dev_name = "ADC-SENSOR#0"; //name of BLE service
-int sens_value = 0; //pure sensor
-float sens_voltage = 0; //Voltage ADC Input
-double factor = 2; //calibration attenuator factor
+int sens_value = 0; //pure sensor 0
+int sens1_value = 0; //pure sensor 1
+float sens_voltage = 0; //Voltage ADC0 Input
+float sens1_voltage = 0; //Voltage ADC1 Input
+double factor = 5; //calibration attenuator0 factor
+double factor1 = 5.61; //calibration attenuator1 factor
 double adc_calibr =3.3; //calibration ADC factor
 float real_voltage =0; //measuring voltage
+float real1_voltage =0; //measuring voltage
 float old_real_voltage=0; //contains the result of the previous measurement
+float old_real1_voltage=0; //contains the result of the previous measurement
 float alarm_h =11; //led alarm threshold value 1
 float alarm_l =10; //led alarm threshold value 2
 int zone_flag = 0; //current voltage zone
@@ -56,6 +62,7 @@ void setup() {
 
   //ADC
   pinMode(sens_pin, INPUT); // declare the sens_pin as an INPUT
+  pinMode(sens1_pin, INPUT); // declare the sens1_pin as an INPUT
 
   //relay output init
   relay_init();
@@ -71,6 +78,7 @@ void setup() {
   Serial.printf("Total heap:\t%d \r\n", ESP.getHeapSize());
   Serial.printf("Free heap:\t%d \r\n", ESP.getFreeHeap());
   Serial.println("ADC_PIN= "+String(sens_pin));
+  Serial.println("ADC1_PIN= "+String(sens1_pin));
 
   ble_setup(); //start BLE server
   Serial.println("-----------------------------------------");
@@ -82,11 +90,17 @@ void setup() {
 void loop() {
 
   old_real_voltage=real_voltage; //save old voltage
+  old_real1_voltage=real1_voltage;
 
   // read the value from the sensor:
   sens_value = analogRead(sens_pin);
   sens_voltage =sens_value*adc_calibr/4096; // calculate
   real_voltage = sens_voltage * factor; //new real voltage
+
+  sens1_value = analogRead(sens1_pin);
+  sens1_voltage =sens1_value*adc_calibr/4096; // calculate ???
+  real1_voltage = sens1_voltage * factor1; //new real1 voltage
+
 
   ble_pcounter++;
   // relay control logic processing

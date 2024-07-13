@@ -10,6 +10,7 @@ extern int orange_pin;
 
 //Declaration
 void storage_factor_u(String su);
+void storage_factor1_u(String su);
 void storage_adc_u(String su);
 void storage_alarm_h(String su);
 void storage_alarm_l(String su);
@@ -23,9 +24,13 @@ extern String ds1;
 extern String ds2;
 extern String dev_name;
 extern int sens_value;
+extern int sens1_value;
 extern float sens_voltage;
+extern float sens1_voltage;
 extern float real_voltage;
+extern float real1_voltage;
 extern double factor; //(nvram)
+extern double factor1; //(nvram)
 extern double adc_calibr; //(nvram)
 extern float alarm_h; //(nvram)
 extern float alarm_l; //(nvram)
@@ -126,11 +131,17 @@ class MyCallbacks: public BLECharacteristicCallbacks {
                 ble_handle_tx(s); //information for debug
             }
             else if (pstr=="atc"||pstr=="atc\r\n") { //atc - calibration information
-              String s ="sens_pure="+String(sens_value)
+              String s ="---------- "+String(0) 
+                  +"\r\nsens_pure="+String(sens_value)
                   +"\r\nadc_calibr="+String(adc_calibr)
                   +"\r\nsens_voltage="+String(sens_voltage)                 
                   +"\r\natt_factor="+String(factor)
-                  +"\r\nreal_voltage="+String(real_voltage);
+                  +"\r\nreal_voltage="+String(real_voltage)
+                  +"\r\n---------- "+String(1)
+                  +"\r\nsens1_pure="+String(sens1_value)
+                  +"\r\nsens1_voltage="+String(sens1_voltage)
+                  +"\r\natt_factor1="+String(factor1)
+                  +"\r\nreal1_voltage="+String(real1_voltage);
                 ble_handle_tx(s); //information for debug
             }
             else if (pstr=="atv"||pstr=="atv\r\n") { //atv - result voltage
@@ -138,8 +149,11 @@ class MyCallbacks: public BLECharacteristicCallbacks {
                 ble_handle_tx(rv); //ответ c учетом калибровки
                 ds2="S:"+rv;disp_show(); //вывод на дисплей
             }
-            else if (pstr.substring(0,4)=="atu=") {  //atu= - attenuator calibration
+            else if (pstr.substring(0,4)=="atu=") {  //atu= - attenuator 0 calibration
                 storage_factor_u(pstr.substring(4));
+            }
+            else if (pstr.substring(0,5)=="atu1=") {  //atu1= - attenuator 1 calibration
+                storage_factor1_u(pstr.substring(5)); //с позиции 5 и до конца..
             }
             else if (pstr.substring(0,4)=="ata=") { //ata= - ADC calibration
                 storage_adc_u(pstr.substring(4));
@@ -193,6 +207,7 @@ void ble_setup(){
   //читаем все параметры NVRAM
   preferences.begin("hiveMon", true); //открываем пространство имен NVRAM read only
   factor = preferences.getDouble("att_factor", 5.0);
+  factor1 = preferences.getDouble("att_factor1", 5.61);
   adc_calibr = preferences.getDouble("adc_calibr", 3.01);//default adc_calibr=3.01 Volt !!!
   alarm_h = preferences.getFloat("alarm_h", 14.4);
   alarm_l = preferences.getFloat("alarm_l", 11.0);
@@ -259,7 +274,7 @@ void ble_handle_tx(String str){
 
 }
 
-//калибровка делителя через U (вводим напряжение)
+//калибровка делителя 0 через U (вводим напряжение)
 void storage_factor_u(String su){
   float test_volt=su.toFloat(); //округляет до 2-х знаков после дес. точки...???
   factor = test_volt/sens_voltage;
@@ -268,6 +283,17 @@ void storage_factor_u(String su){
 
   preferences.begin("hiveMon", false);
   preferences.putDouble("att_factor", factor);
+  preferences.end();
+}
+//калибровка делителя 1 через U (вводим напряжение)
+void storage_factor1_u(String su){
+  float test_volt=su.toFloat(); //округляет до 2-х знаков после дес. точки...???
+  factor1 = test_volt/sens1_voltage;
+  Serial.println("new factor1="+String(factor1));
+  ble_handle_tx("new factor1="+String(factor1)); //ответ на BLE
+
+  preferences.begin("hiveMon", false);
+  preferences.putDouble("att_factor1", factor1);
   preferences.end();
 }
 
@@ -315,7 +341,8 @@ void help_print(){
           shelp+="\r\natv -resulting voltage";
           shelp+="\r\natz -set default parameters";
           shelp+="\r\nata=[U_ADC_in] -ADC calibration";
-          shelp+="\r\natu=[U_in] -attenuator calibration";
+          shelp+="\r\natu=[U_in] -attenuator 0 calibration";
+          shelp+="\r\natu1=[U1_in] -attenuator 1 calibration";
           shelp+="\r\nath=[U] -alarm H Voltage";
           shelp+="\r\natl=[U] -alarm L Voltage";
           shelp+="\r\natn=[name] -BLE device name";
