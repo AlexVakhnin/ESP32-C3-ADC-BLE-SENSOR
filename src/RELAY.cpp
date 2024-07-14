@@ -5,12 +5,8 @@
 #define ZONE_HIGH 1
 #define ZONE_MIDDLE 0
 #define ZONE_LOW 2
-#define AC_220V_ON 7
 
-extern float real_voltage;
-extern float real1_voltage;
-extern float old_real_voltage;
-extern float old_real1_voltage;
+
 extern float alarm_h;
 extern float alarm_l;
 extern boolean doShutdown;
@@ -19,6 +15,8 @@ extern String dispstatus;
 extern boolean doPowerOn;
 extern int zone_flag;
 extern int old_zone_flag;
+extern boolean ac220v_flag;
+extern boolean old_ac220v_flag;
 
 //Variables
 //const int orange_pin = ORANGE_RELAY_PIN;//battery charging relay pin
@@ -29,20 +27,27 @@ void relay_init(){
 
   pinMode(orange_pin, OUTPUT);
   digitalWrite(orange_pin, RELAY_OFF); //relay = OFF
+  dispstatus = "WON"; //wait baterry charging
   doPowerOn=true; //ожидание зарядки и включение питания
 }
 
 // relay control logic processing (for Orange Pi to right restarting..)
 void relay_control(){
 
+  /*
   //переход на заряд достаточный для включения питания
   if(old_zone_flag == ZONE_MIDDLE && zone_flag ==ZONE_HIGH){
     Serial.println("Event- TO HIGH..");
     //проверка, если реле выключено, тогда включанм его..
     if(digitalRead(orange_pin)==RELAY_OFF){
+      dispstatus = "WON"; //wait baterry charging
+      doShutdown = false; //отмена dhutdown
       doPowerOn=true; //ожидание зарядки и включение питания
     }
   }
+  */
+
+  /*
   //переход на критически низкий уровень для аккумулятора !!!
   else if(old_zone_flag == ZONE_MIDDLE && zone_flag ==ZONE_LOW){
     Serial.println("Event- TO LOW..");
@@ -57,7 +62,9 @@ void relay_control(){
       Serial.println("Сritically low level..RELAY OFF");
     }
   }
-  //Дополнительная проверка..
+*/
+
+  //критически низкий уровень для аккумулятора !!!
   if(zone_flag ==ZONE_LOW && digitalRead(orange_pin)==RELAY_ON){
     digitalWrite(orange_pin, RELAY_OFF); //relay = OFF
     Serial.println("Сritically low level..RELAY OFF (CHECK ERROR..)");
@@ -70,8 +77,9 @@ void relay_control(){
     doShutdown=false;
     Serial.println("Event-Shutdown: "+String(ble_pcounter));
   }
+
   //power on handling
-  if (doPowerOn && zone_flag == ZONE_HIGH && real1_voltage > AC_220V_ON && old_real1_voltage > AC_220V_ON){ //AC 220v ON !!!
+  if (doPowerOn && zone_flag == ZONE_HIGH && ac220v_flag){ //AC 220v ON !!!
     digitalWrite(orange_pin, RELAY_ON); //relay = ON
     dispstatus = "ON ";
     doPowerOn=false;

@@ -3,6 +3,7 @@
 //#include <nvs_flash.h> //для стирания всего NVRAM
 
 #define ORANGE_RELAY_PIN 20
+#define AC220V_THRESHOLD 7
 
 //Function Declaration
 extern void disp_show();
@@ -37,6 +38,8 @@ float alarm_h =11; //led alarm threshold value 1
 float alarm_l =10; //led alarm threshold value 2
 int zone_flag = 0; //current voltage zone
 int old_zone_flag = 0; //old voltage zone
+boolean ac220v_flag = false; //220v ON! indicator
+boolean old_ac220v_flag = false; //old 220v ON! indicator
 boolean ble_indicate =false; //if ble process = true
 long ble_pcounter = 0; //ble connect period counter
 long ble_period = 0; //ble connect period
@@ -89,28 +92,34 @@ void setup() {
 
 void loop() {
 
-  old_real_voltage=real_voltage; //save old voltage
-  old_real1_voltage=real1_voltage;
 
   // read the value from the sensor:
+  old_real_voltage=real_voltage; //save old voltage
   sens_value = analogRead(sens_pin);
   sens_voltage =sens_value*adc_calibr/4096; // calculate
   real_voltage = sens_voltage * factor; //new real voltage
 
+  old_real1_voltage=real1_voltage; //save old voltage
   sens1_value = analogRead(sens1_pin);
   sens1_voltage =sens1_value*adc_calibr/4096; // calculate ???
   real1_voltage = sens1_voltage * factor1; //new real1 voltage
 
+  //voltage zone..(7.5 - 12.6)
+  old_zone_flag = zone_flag;
+  if     (real_voltage < alarm_l && old_real_voltage < alarm_l) zone_flag=2; //<8V
+  else if(real_voltage > alarm_h && old_real_voltage > alarm_h) zone_flag=1; //>11.4V
+  else zone_flag=0;
+
+  //ac_220v handling
+  old_ac220v_flag = ac220v_flag;
+  if(real1_voltage > AC220V_THRESHOLD && old_real1_voltage > AC220V_THRESHOLD) ac220v_flag=true;
+  else ac220v_flag=false;
 
   ble_pcounter++;
+
   // relay control logic processing
   relay_control();
 
-  //voltage zone..
-  old_zone_flag = zone_flag;
-  if     (real_voltage < alarm_l) zone_flag=2; //11V
-  else if(real_voltage > alarm_h) zone_flag=1; //14.4V
-  else zone_flag=0;
 
   //DEBUG..
   //Serial.print("sens_value: "+ String(sens_value));Serial.print("  sens_voltage = "+ String(sens_voltage));
