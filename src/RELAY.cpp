@@ -36,40 +36,17 @@ void relay_init(){
 // relay control logic processing (for Orange Pi to right restarting..)
 void relay_control(){
 
-  /*
-  //переход на заряд достаточный для включения питания
-  if(old_zone_flag == ZONE_MIDDLE && zone_flag ==ZONE_HIGH){
-    Serial.println("Event- TO HIGH..");
-    //проверка, если реле выключено, тогда включанм его..
-    if(digitalRead(orange_pin)==RELAY_OFF){
-      dispstatus = "WON"; //wait baterry charging
-      doShutdown = false; //отмена dhutdown
-      doPowerOn=true; //ожидание зарядки и включение питания
-    }
-  }
-  */
-
-  /*
-  //переход на критически низкий уровень для аккумулятора !!!
-  else if(old_zone_flag == ZONE_MIDDLE && zone_flag ==ZONE_LOW){
-    Serial.println("Event- TO LOW..");
-    //проверка, если реле включено, тогда выключанм его..
-    if(digitalRead(orange_pin)==RELAY_ON){
-      //ble_pcounter=0;
-      //dispstatus = "WOF";
-      //doShutdown = true;
-      digitalWrite(orange_pin, RELAY_OFF); //relay = OFF
-      dispstatus = "OFF";
-      doShutdown=false;
-      Serial.println("Сritically low level..RELAY OFF");
-    }
-  }
-*/
-
+ 
   //критически низкий уровень для аккумулятора !!!
   if(zone_flag ==ZONE_LOW && digitalRead(orange_pin)==RELAY_ON){
     digitalWrite(orange_pin, RELAY_OFF); //relay = OFF
     Serial.println("Сritically low level..RELAY OFF (CHECK ERROR..)");
+    //ESP.restart();
+    dispstatus = "OFF";
+    doShutdown=false;
+    doPowerOn=false;
+    pause_counter=0;
+    doPause=true;
   }
 
   //shutdown handling
