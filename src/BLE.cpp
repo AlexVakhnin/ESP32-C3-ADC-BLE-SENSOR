@@ -37,10 +37,13 @@ extern float alarm_l; //(nvram)
 extern boolean ble_indicate;
 extern long ble_pcounter;
 extern long ble_period;
+extern long pause_counter;
 extern boolean doShutdown;
 extern boolean doPowerOn;
+extern boolean doPause;
 extern String dispstatus;
 extern int zone_flag;
+extern boolean ac220v_flag;
 
 BLEServer* pServer = NULL;
 BLECharacteristic* pCharacteristic = NULL;
@@ -118,12 +121,14 @@ class MyCallbacks: public BLECharacteristicCallbacks {
                 reset_nvram();
             }            
             else if (pstr=="ati"||pstr=="ati\r\n") { //ati - information
-              String zone="";
+              String zone="";String ac220="";
               if(zone_flag==1) {zone ="HIGH";} else if(zone_flag==2) {zone ="LOW";} else {zone ="MIDDLE";}
+              if(ac220v_flag) {ac220="ON";} else {ac220="OFF";}  
               String s ="name="+dev_name
-                  +"\r\ntimeout="+String(ble_pcounter)
+                  +"\r\ntimeout="+String(pause_counter)
                   +"\r\nstatus="+dispstatus
                   +"\r\nzone="+zone
+                  +"\r\nac220v="+ac220
                   +"\r\nrelay="+String(digitalRead(orange_pin))
                   +"\r\nalarm_h="+String(alarm_h)
                   +"\r\nalarm_l="+String(alarm_l) 
@@ -170,8 +175,10 @@ class MyCallbacks: public BLECharacteristicCallbacks {
             else if (pstr=="shutdown"||pstr=="shutdown\r\n") { //relay off
                 ble_handle_tx("DO POWER OFF"); //to BLE terminal
                 dispstatus = "WOF"; //wait timmer value
-                ble_pcounter=0;//дополнительно сбросим на всякий случай
+                pause_counter=0;//заряжаем паузу..
                 ds2="S:DPO";disp_show(); //вывод на дисплей
+                doPowerOn = false;
+                doPause = false;
                 doShutdown = true; //выключить питание с задержкой
             }
             else if (pstr=="poweron"||pstr=="poweron\r\n") { //relay off
@@ -179,6 +186,7 @@ class MyCallbacks: public BLECharacteristicCallbacks {
                 dispstatus = "WON"; //wait baterry charging
                 ds2="S:DO ON";disp_show(); //вывод на дисплей
                 doShutdown = false; //отмена dhutdown
+                doPause = false;
                 doPowerOn = true; //включить питание, если АКБ заряжен
             }
             else {ble_handle_tx("???");ds2="S:???";disp_show();}

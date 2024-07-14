@@ -43,8 +43,10 @@ boolean old_ac220v_flag = false; //old 220v ON! indicator
 boolean ble_indicate =false; //if ble process = true
 long ble_pcounter = 0; //ble connect period counter
 long ble_period = 0; //ble connect period
+long pause_counter = 0; //pause_counter
 boolean doShutdown =false; //for shutdown handling
 boolean doPowerOn =false; // for power on handling
+boolean doPause =false; // for pause handling
 String dispstatus = "WON"; //status on display
 
 
@@ -115,7 +117,7 @@ void loop() {
   if(real1_voltage > AC220V_THRESHOLD && old_real1_voltage > AC220V_THRESHOLD) ac220v_flag=true;
   else ac220v_flag=false;
 
-  ble_pcounter++;
+  ble_pcounter++; pause_counter++;
 
   // relay control logic processing
   relay_control();

@@ -10,9 +10,11 @@
 extern float alarm_h;
 extern float alarm_l;
 extern boolean doShutdown;
-extern long ble_pcounter;
 extern String dispstatus;
 extern boolean doPowerOn;
+extern boolean doPause;
+//extern long ble_pcounter;
+extern long pause_counter;
 extern int zone_flag;
 extern int old_zone_flag;
 extern boolean ac220v_flag;
@@ -71,11 +73,14 @@ void relay_control(){
   }
 
   //shutdown handling
-  if (doShutdown && ble_pcounter>9){
+  if (doShutdown && pause_counter > 9){
     digitalWrite(orange_pin, RELAY_OFF); //relay = OFF
     dispstatus = "OFF";
     doShutdown=false;
-    Serial.println("Event-Shutdown: "+String(ble_pcounter));
+    doPowerOn=false;
+    pause_counter=0;
+    doPause=true;
+    Serial.println("Event-Shutdown: "+String(pause_counter));
   }
 
   //power on handling
@@ -83,8 +88,21 @@ void relay_control(){
     digitalWrite(orange_pin, RELAY_ON); //relay = ON
     dispstatus = "ON ";
     doPowerOn=false;
+    doShutdown = false;
+    doPause=false;
     Serial.println("Event-PowerOn..");
   }
+
+  //pause handling
+  if (doPause && pause_counter > 19){
+    doPause=false;
+    doShutdown = false; //отмена dhutdown
+    doPowerOn=true;
+    dispstatus = "WON";
+  }
+
+
+
   //DEBUG
   //Serial.println("Relay: "+String(digitalRead(orange_pin)));
   
