@@ -1,14 +1,16 @@
 #!/usr/bin/expect -f
 #
+#  Change the line "set dev" to your mac address !
+#
 #  Usage with crontab:
 #  * * * * * /root/ble.sh>/dev/null
 #  Log file:
 #  /root/blelog.yymmdd
 #
-set dev "EC:DA:3B:BE:25:16"
+set dev "34:B7:DA:F8:4C:B2"
 set uuid "d8182a40-7316-4cbf-9c6e-be507a76d775"
 set timeout 5
-set thold 5.2
+set thold 12
 set now [timestamp -format {%Y-%m-%d %H:%M:%S}]
 set logpref [timestamp -format {%y%m%d}]
 log_file "/root/blelog.$logpref"
@@ -70,7 +72,7 @@ if {$voltage > $thold} {
 	expect "#"
 	send -- "disconnect $dev\r"
 	expect "Attempting to disconnect"
-	#	exec /sbin/shutdown -h now
+	exec /sbin/shutdown -h now
 }
 expect "#"
 send -- "exit\r"
