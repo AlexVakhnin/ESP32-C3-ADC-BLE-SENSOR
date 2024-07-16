@@ -214,10 +214,10 @@ void ble_setup(){
 
   //читаем все параметры NVRAM
   preferences.begin("hiveMon", true); //открываем пространство имен NVRAM read only
-  factor = preferences.getDouble("att_factor", 5.12);
-  factor1 = preferences.getDouble("att_factor1", 5.06);
-  adc_calibr = preferences.getDouble("adc_calibr", 2.99);//default adc_calibr=2.99 Volt !!!
-  alarm_h = preferences.getFloat("alarm_h", 11.1);
+  factor = preferences.getDouble("att_factor", 5.00);
+  factor1 = preferences.getDouble("att_factor1", 5.00);
+  adc_calibr = preferences.getDouble("adc_calibr", 3.00);//default adc_calibr=3.00 Volt !!!
+  alarm_h = preferences.getFloat("alarm_h", 11.5);
   alarm_l = preferences.getFloat("alarm_l", 10.0);// BMS-3S-1 отключает при уровне 9.3 вольта..
   dev_name = preferences.getString("dev_name", "ADC-SENSOR#1");
   preferences.end(); //закрываем NVRAM

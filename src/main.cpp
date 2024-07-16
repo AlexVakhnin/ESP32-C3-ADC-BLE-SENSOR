@@ -27,15 +27,15 @@ int sens_value = 0; //pure sensor 0
 int sens1_value = 0; //pure sensor 1
 float sens_voltage = 0; //Voltage ADC0 Input
 float sens1_voltage = 0; //Voltage ADC1 Input
-double factor = 5; //calibration attenuator0 factor
-double factor1 = 5.61; //calibration attenuator1 factor
-double adc_calibr =3.3; //calibration ADC factor
-float real_voltage =0; //measuring voltage
-float real1_voltage =0; //measuring voltage
+double factor = 5.00; //calibration attenuator0 factor
+double factor1 = 5.00; //calibration attenuator1 factor
+double adc_calibr =3.00; //calibration ADC factor (опорное напряжение)
+float real_voltage =0; //measuring voltage ADC0 with attenuator
+float real1_voltage =0; //measuring voltage ADC1 with attenuator
 float old_real_voltage=0; //contains the result of the previous measurement
 float old_real1_voltage=0; //contains the result of the previous measurement
-float alarm_h =11; //led alarm threshold value 1
-float alarm_l =10; //led alarm threshold value 2
+float alarm_h =11.50; //high threshold value
+float alarm_l =10.00; //low threshold value
 int zone_flag = 0; //current voltage zone
 int old_zone_flag = 0; //old voltage zone
 boolean ac220v_flag = false; //220v ON! indicator
@@ -103,13 +103,13 @@ void loop() {
 
   old_real1_voltage=real1_voltage; //save old voltage
   sens1_value = analogRead(sens1_pin);
-  sens1_voltage =sens1_value*adc_calibr/4096; // calculate ???
+  sens1_voltage =sens1_value*adc_calibr/4096; // calculate
   real1_voltage = sens1_voltage * factor1; //new real1 voltage
 
-  //voltage zone..(7.5 - 12.6)
+  //voltage zone..(9.3 - 12.6) with BMS-3S-1
   old_zone_flag = zone_flag;
-  if     (real_voltage < alarm_l && old_real_voltage < alarm_l) zone_flag=2; //<8V
-  else if(real_voltage > alarm_h && old_real_voltage > alarm_h) zone_flag=1; //>11.4V
+  if     (real_voltage < alarm_l && old_real_voltage < alarm_l) zone_flag=2; //<10V
+  else if(real_voltage > alarm_h && old_real_voltage > alarm_h) zone_flag=1; //>11.5V
   else zone_flag=0;
 
   //ac_220v handling
