@@ -2,7 +2,8 @@
 **Schematic sensor simple:** [sensor-schem](/Help/sensor-schem.png)
 **Breadboard:** [sensor_bb](/Help/sensor_bb.png)<br />
 **Smart UPS for Orange Pi:** [sensor-schem3](/Help/sensor-v3_schem.png)
-**Breadboard:** [sensor_bb3](/Help/sensor-v3_bb.png)<br />
+**Breadboard:** [sensor_bb3](/Help/sensor-v3_bb.png)
+**Layout:** [device](/Help/device.jpg)<br />
 **Linux testing:** [linux-bluetoothctl](/Help/linux-bluetoothctl.txt)
 **Linux shutdown script:** [shutdown-script](/Help/ble.sh)<br />
 **Client for 4 sensors:** [ESP32-S3-BLE-CLIENT-4S](https://github.com/AlexVakhnin/ESP32-S3-BLE-CLIENT-4S)
