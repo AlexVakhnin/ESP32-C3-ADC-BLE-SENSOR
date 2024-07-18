@@ -10,7 +10,7 @@
 set dev "34:B7:DA:F8:4C:B2"
 set uuid "d8182a40-7316-4cbf-9c6e-be507a76d775"
 set timeout 5
-set thold 11.5
+set thold 12
 set now [timestamp -format {%Y-%m-%d %H:%M:%S}]
 set logpref [timestamp -format {%y%m%d}]
 log_file "/root/blelog.$logpref"
@@ -63,12 +63,6 @@ if {$voltage > $thold} {
 	expect "#"
 	send -- "disconnect $dev\r"
 	expect "Attempting to disconnect"
-} elseif {$voltage < 9} {
-	send_user "$now $voltage < 9  ERROR VOLTAGE..\n"
-	log_user 0
-	expect "#"
-	send -- "disconnect $dev\r"
-	expect "Attempting to disconnect"	
 } else {
 	send_user "$now $voltage <= $thold  Linux shutdown..\n"
 	log_user 0
