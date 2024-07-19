@@ -74,7 +74,7 @@ void setup() {
 
   disp_setup();
    //инициализация прерывания (1.5 sec.)
-  hTicker.attach_ms(1500, alarm_blink);
+  //hTicker.attach_ms(1500, alarm_blink);
 
   //delay(10000);  //10 sec for Platformio start terminal...
 

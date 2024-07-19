@@ -84,6 +84,7 @@ class MyServerCallbacks: public BLEServerCallbacks {
       ble_indicate = true; //захват дисплея
       ds1="R:";ds2="S:";disp_show(); //вывод на дисплей
       deviceConnected = true;
+      digitalWrite(8, LOW); //led = ON (DEBUG..)
     };
 
     void onDisconnect(BLEServer* pServer) {
@@ -95,6 +96,7 @@ class MyServerCallbacks: public BLEServerCallbacks {
       ble_indicate = false; //отпускаем дисплей
       delay(300); // give the bluetooth stack the chance to get things ready
       BLEDevice::startAdvertising();  // restart advertising
+      digitalWrite(8, HIGH); //led = OFF (DEBUG..)
     }
 };
 

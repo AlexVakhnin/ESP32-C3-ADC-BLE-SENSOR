@@ -47,7 +47,7 @@ void disp_show(){
 }
 //показать основной экран
 void disp_main(){
-  ds1=dispstatus+": "+String(real_voltage,3);
+  ds1=dispstatus+":"+String(real_voltage,3);
 
   int per =0;
   int pco =0;
