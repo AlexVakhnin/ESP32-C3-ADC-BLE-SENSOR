@@ -10,31 +10,41 @@
 set dev "34:B7:DA:F8:4C:B2"
 set uuid "d8182a40-7316-4cbf-9c6e-be507a76d775"
 set timeout 5
-set thold 11.5
+set thold 12
 set now [timestamp -format {%Y-%m-%d %H:%M:%S}]
 set logpref [timestamp -format {%y%m%d}]
+set CTRL_C     \x03
 log_file "/root/blelog.$logpref"
-#log_file -a "/root/blelog.$logpref"
 
 log_user 0
 spawn bluetoothctl
-expect "Agent registered"
-expect "#"
+expect {
+  "Waiting to connect to bluetoothd..." { exp_continue }
+  "Agent registered" { expect "# " }
+  timeout {
+    log_user 1
+    send_user "$now bluetooth daemon not found..\n"
+	log_user 0
+    send $CTRL_C
+    expect eof
+    exit
+  }
+}
 send -- "remove $dev\r"
 expect -re "Device has been removed|Device $dev not available"
-expect "#"
+expect "# "
 send -- "scan on\r"
 expect "Discovery started"
 sleep 2
 expect "Device $dev"
-expect "#"
+expect "# "
 send -- "scan off\r"
-expect "#"
+expect "# "
 send -- "connect $dev\r"
 expect {
 	"Connection successful" {expect "$uuid"}
 	"Device $dev not available" {
-		expect "#"
+		expect "# "
 		log_user 1
 		send_user "$now Sensor not found..\n"
 		log_user 0
@@ -43,12 +53,12 @@ expect {
 		exit
 	}
 }
-expect "#"
+expect "# "
 send -- "gatt.select-attribute $uuid\r"
-expect "#"
+expect "# "
 send -- "gatt.write \"97 116 118\"\r" 
 expect -re "Attempting to write|Device $dev not available"
-expect "#"
+expect "# "
 send -- "gatt.read\r"
 expect "Value:"
 expect "0d 0a"
@@ -57,29 +67,30 @@ set str $expect_out(buffer)
 log_user 1
 #puts "Buffer is: <^$str^>"
 set voltage [string trim $str " ."]
-if {$voltage > $thold} {
-	send_user "$now $voltage > $thold  OK!\n"
+if {$voltage < 9 || $voltage > 15} {
+	send_user "$now <^$voltage^>  ERROR VOLTAGE..\n"
 	log_user 0
-	expect "#"
-	send -- "disconnect $dev\r"
-	expect "Attempting to disconnect"
-} elseif {$voltage < 9} {
-	send_user "$now $voltage < 9  ERROR VOLTAGE..\n"
-	log_user 0
-	expect "#"
+	expect "# "
 	send -- "disconnect $dev\r"
 	expect "Attempting to disconnect"	
+} elseif {$voltage > $thold} {
+	send_user "$now $voltage > $thold  OK!\n"
+	log_user 0
+	expect ".."
+	expect "# "
+	send -- "disconnect $dev\r"
+	expect "Attempting to disconnect"
 } else {
 	send_user "$now $voltage <= $thold  Linux shutdown..\n"
 	log_user 0
-	expect "#"
+	expect "# "
 	send -- "gatt.write \"115 104 117 116 100 111 119 110\"\r" 
 	expect -re "Attempting to write|Device $dev not available"
-	expect "#"
+	expect "# "
 	send -- "disconnect $dev\r"
 	expect "Attempting to disconnect"
 	exec /sbin/shutdown -h now
 }
-expect "#"
+expect "# "
 send -- "exit\r"
 expect eof
