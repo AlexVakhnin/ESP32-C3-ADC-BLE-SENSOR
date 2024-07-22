@@ -1,0 +1,67 @@
+orange-pi-zero3 armbian-minimal
+-------------------------------------
+start password: 1234
+apt-get update
+apt-get upgrade
+shutdown -h now -> restart device..
+apt update
+apt upgrade
+apt install armbian-config
+systemctl status bluetooth
+bluetoothctl -> list
+apt install procps iproute2 dnsmasq iptables hostapd iw
+ip addr
+apt install net-tools
+#upt install network-manager
+systemctl disable wpa_supplicant !!!
+
+-------------netplan-----------
+network:
+  version: 2
+  renderer: networkd
+  ethernets:
+    all-eth-interfaces:
+      match:
+        name: "end*"
+      dhcp4: yes
+      dhcp6: yes
+      ipv6-privacy: yes
+    wlan0:
+      addresses:
+        - 172.24.1.1/24
+
+netplan get
+netplan status --all
+netplan apply
+--------------------
+systemctl ubmask hostapd
+systemctl enable hostapd
+systemctl start hostapd
+
+apt install openvswitch-switch-dpdk
+
+---------------------------------
+sudo sh -c "echo 1 > /proc/sys/net/ipv4/ip_forward"
+sudo iptables -t nat -A POSTROUTING -o end0 -j MASQUERADE
+sudo iptables -A FORWARD -i end0 -o wlan0 -m state --state RELATED,ESTABLISHED -j ACCEPT
+sudo iptables -A FORWARD -i wlan0 -o end0 -j ACCEPT
+---------------------------------
+root@orangepi2mini:~# sudo iptables -t nat -S
+-P PREROUTING ACCEPT
+-P INPUT ACCEPT
+-P OUTPUT ACCEPT
+-P POSTROUTING ACCEPT
+-A PREROUTING -i wlan0 -p tcp -m tcp --dport 22 -j REDIRECT --to-ports 22
+-A PREROUTING -i wlan0 -p udp -m udp --dport 53 -j REDIRECT --to-ports 53
+-A PREROUTING -i wlan0 -p tcp -m tcp --tcp-flags FIN,SYN,RST,ACK SYN -j REDIRECT --to-ports 9040
+-A POSTROUTING -o eth0 -j MASQUERADE
+root@orangepi2mini:~# sudo iptables -S
+-P INPUT ACCEPT
+-P FORWARD ACCEPT
+-P OUTPUT ACCEPT
+-A FORWARD -i eth0 -o wlan0 -m state --state RELATED,ESTABLISHED -j ACCEPT
+-A FORWARD -i wlan0 -o eth0 -j ACCEPT
+------------------------------------------
+sudo sh -c "iptables-save > /etc/iptables/rules.v4"
+apt install iptables-persistent
+ip addr
