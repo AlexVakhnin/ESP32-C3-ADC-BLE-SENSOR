@@ -53,6 +53,7 @@ expect {
 		exit
 	}
 }
+expect "ServicesResolved: yes"
 expect "# "
 send -- "gatt.select-attribute $uuid\r"
 expect "# "
