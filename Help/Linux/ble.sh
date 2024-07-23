@@ -39,6 +39,7 @@ sleep 2
 expect "Device $dev"
 expect "# "
 send -- "scan off\r"
+expect "Discovery stopped"
 expect "# "
 send -- "connect $dev\r"
 expect {
