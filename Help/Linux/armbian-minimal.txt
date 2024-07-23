@@ -3,17 +3,21 @@ orange-pi-zero3 armbian-minimal
 start password: 1234
 apt-get update
 apt-get upgrade
-shutdown -h now -> restart device..
 apt update
 apt upgrade
-apt install armbian-config
+shutdown -r now  #restart device..
+
+apt install armbian-config  #and set timezone
+apt install procps iproute2 dnsmasq iptables hostapd iw  #for wifi AP
+apt install net-tools
+apt install openvswitch-switch-dpdk  #for netplan
+
+#upt install network-manager  #no need, because netplan renderer: networkd
+
 systemctl status bluetooth
 bluetoothctl -> list
-apt install procps iproute2 dnsmasq iptables hostapd iw
 ip addr
-apt install net-tools
-#upt install network-manager
-systemctl disable wpa_supplicant !!!
+systemctl disable wpa_supplicant  #necessarily for AP !!!
 
 -------------netplan-----------
 network:
@@ -29,6 +33,7 @@ network:
     wlan0:
       addresses:
         - 172.24.1.1/24
+-------------------------------
 
 netplan get
 netplan status --all
@@ -38,15 +43,14 @@ systemctl ubmask hostapd
 systemctl enable hostapd
 systemctl start hostapd
 
-apt install openvswitch-switch-dpdk
 
 ---------------------------------
-sudo sh -c "echo 1 > /proc/sys/net/ipv4/ip_forward"
+echo 1 > /proc/sys/net/ipv4/ip_forward
 sudo iptables -t nat -A POSTROUTING -o end0 -j MASQUERADE
 sudo iptables -A FORWARD -i end0 -o wlan0 -m state --state RELATED,ESTABLISHED -j ACCEPT
 sudo iptables -A FORWARD -i wlan0 -o end0 -j ACCEPT
 ---------------------------------
-root@orangepi2mini:~# sudo iptables -t nat -S
+iptables -t nat -S
 -P PREROUTING ACCEPT
 -P INPUT ACCEPT
 -P OUTPUT ACCEPT
@@ -54,14 +58,14 @@ root@orangepi2mini:~# sudo iptables -t nat -S
 -A PREROUTING -i wlan0 -p tcp -m tcp --dport 22 -j REDIRECT --to-ports 22
 -A PREROUTING -i wlan0 -p udp -m udp --dport 53 -j REDIRECT --to-ports 53
 -A PREROUTING -i wlan0 -p tcp -m tcp --tcp-flags FIN,SYN,RST,ACK SYN -j REDIRECT --to-ports 9040
--A POSTROUTING -o eth0 -j MASQUERADE
-root@orangepi2mini:~# sudo iptables -S
+-A POSTROUTING -o end0 -j MASQUERADE
+iptables -S
 -P INPUT ACCEPT
 -P FORWARD ACCEPT
 -P OUTPUT ACCEPT
--A FORWARD -i eth0 -o wlan0 -m state --state RELATED,ESTABLISHED -j ACCEPT
--A FORWARD -i wlan0 -o eth0 -j ACCEPT
+-A FORWARD -i end0 -o wlan0 -m state --state RELATED,ESTABLISHED -j ACCEPT
+-A FORWARD -i wlan0 -o end0 -j ACCEPT
 ------------------------------------------
-sudo sh -c "iptables-save > /etc/iptables/rules.v4"
+iptables-save > /etc/iptables/rules.v4
 apt install iptables-persistent
-ip addr
+

@@ -1,0 +1,234 @@
+    1  uname -a
+    2  apt-get update
+    3  apt-get upgrade
+    4  reboot
+    5  apt update
+    6  apt install armbian-config
+    7  shutdown -h now
+    8  uname -a
+    9  systemctl status bluetooth
+   10  bluetoothctl
+   11  shutdown -r now
+   16  chmod +x ble.sh 
+   31  armbian-config
+   53  last -x shutdown
+   55  uname -a
+   63  systemctl status hostapd
+   65  systemctl status systemd-resolved
+   66  ip addr
+   71  systemctl disable systemd-resolved.service
+   72  systemctl status systemd-resolved.service
+   73  systemctl stop systemd-resolved.service
+   74  systemctl status systemd-resolved.service
+   75  reboot
+   78  apt install procps
+   79  apt install iproute2
+   80  apt install dnsmasq
+   81  systemctl enable systemd-resolved.service
+   82  systemctl status systemd-resolved.service
+   83  systemctl start systemd-resolved.service
+   84  systemctl status systemd-resolved.service
+   85  ping www.google.com
+   86  systemctl disable systemd-resolved.service
+   87  systemctl status systemd-resolved.service
+   88  apt install dnsmasq
+   89  systemctl stop systemd-resolved.service
+   90  systemctl status systemd-resolved.service
+   91  apt install dnsmasq
+   92  systemctl status dnsmasq
+   93  systemctl start dnsmasq
+   94  systemctl status dnsmasq
+   95  ping www.google.com
+   96  systemctl status dnsmasq
+   97  systemctl stop dnsmasq
+   98  systemctl status dnsmasq
+   99  systemctl status dnsmasq
+  100  systemctl status systemd-resolved.service
+  101  systemctl start systemd-resolved.service
+  102  systemctl status systemd-resolved.service
+  103  ping www.google.com
+  106  cat dnsmasq.conf 
+  107  nano dnsmasq.conf 
+  110  systemctl status systemd-resolved.service
+  111  systemctl stop systemd-resolved.service
+  114  systemctl disable systemd-resolved.service
+  115  systemctl status systemd-resolved.service
+  116  systemctl status dnsmasq
+  117  systemctl start dnsmasq
+  118  systemctl status dnsmasq
+  119  ping www.google.com
+  120  nano dnsmasq.conf 
+  122  cat resolv.conf
+  123  nano dnsmasq.conf 
+  124  pwd
+  125  systemctl status dnsmasq
+  126  systemctl stop dnsmasq
+  127  systemctl start dnsmasq
+  128  ping www.google.com
+  129  systemctl status dnsmasq
+  130  systemctl status systemd-resolved.service
+  131  reboot
+  132  systemctl status systemd-resolved.service
+  133  systemctl status dnsmasq
+  134  ping www.google.com
+  138  apt install iptables
+  139  apt install hostapd
+  140  apt install iw
+  144  nano resolv.conf 
+  145  ping www.google.com
+  146  ls -l | grep resolv
+  147  cat resolv.conf 
+  148  systemctl status NetworkManager
+  149  systemctl status hostapd
+  150  systemctl status hostapd.service
+  151  systemctl status NetworkManager.service
+  152  systemctl status hostapd.service
+  153  systemctl start hostapd.service
+  154  apt-get install hostapd
+  155  systemctl enable hostapd
+  156  cd /etc/systemd/system/
+  157  ls
+  158  cat hostapd.service 
+  159  ls -l
+  160  apt-get reinstall hostapd
+  167  cd /etc/network/
+  175  nano dnsmasq.conf
+  176  systemctl status dnsmasq
+  177  systemctl restart dnsmasq
+  178  ls -l
+  179  systemctl status dnsmasq
+  180  nano dnsmasq.conf
+  181  systemctl start dnsmasq
+  182  ping www.google.com
+  183  systemctl status dnsmasq
+  185  ls -la
+  186  nano hostapd.conf 
+  190  shutdown -r now
+  209  systemctl status NetworkManager
+  210  systemctl disable NetworkManager
+  211  systemctl stop NetworkManager
+  212  systemctl status NetworkManager
+  213  shutdown -r now
+  214  ifconfig
+  215  apt install net-tools
+  216  ifconfig
+  217  ps -ax | grep wpa
+  218  systemctl status wpa_supplicant
+  219  systemctl stop wpa_supplicant
+  220  systemctl disable wpa_supplicant
+  221  systemctl status wpa_supplicant
+  222  cat /etc/hostapd.conf 
+  223  hostapd /etc/hostapd.conf 
+  224  ps -ax | grep host
+  225  kill -9 1693
+  226  ps -ax | grep host
+  227  ps -ax | grep wpa
+  228  ifconfig
+  230  systemctl status hostapd
+  232  systemctl unmask hostapd
+  233  systemctl enable hostapd
+  234  systemctl status hostapd
+  235  systemctl start hostapd
+  236  systemctl status hostapd
+  238  ps -ax | grep host
+  239  ps -ax | grep hostapd
+  240  systemctl status hostapd
+  241  systemctl start hostapd
+  245  ps -ax | grep host
+  247  man networkd
+  248  ps -ax | grep netw
+  249  man systemd-networkd
+  258  systemctl stop NetworkManager
+  259  systemctl disable NetworkManager
+  260  systemctl status NetworkManager
+  262  ps -ax | grep network
+  264  netplan get
+  266  netplan status --all
+  268  netplan get
+  269  cd /etc/netplan
+  270  ls -la
+  271  chmod o-r 30-wifi-access.yaml 
+  272  chmod g-r 30-wifi-access.yaml 
+  273  ls -la
+  274  netplan get
+  275  netplan apply
+  276  ifconfig
+  277  netplan apply
+  278  apt upgrade
+  279  apt install openvswitch-switch-dpdk
+  280  netplan apply
+  281  ip show
+  282  ifconfig
+  283  ip addr
+  284  netplan get
+  285  netplan status --all
+  286  netplan get
+  287  netplan apply
+  288  netplan status --all
+  289  ifconfig
+  290  cd /etc
+  291  ls -la
+  292  netplan status --all
+  293  shutdown -r now
+  294  netplan status --all
+  295  systemctl status dnsmasq
+  296  systemctl start dnsmasq
+  297  systemctl status dnsmasq
+  298  ping www.google.com
+  299  netplan get
+  300  netplan apply
+  301  netplan status --all
+  302  shutdown -r now
+  303  ifconfig
+  304  systemctl status dnsmasq
+  305  ifconfig
+  306  systemctl status hostapd
+  308  systemctl status dnsmasq
+  314  ifconfig
+  315  man iptables
+  316  systemctl status netfilter-persistent
+  317  apt install iptables-persistent
+  318  systemctl status netfilter-persistent
+  319  apt reinstall iptables-persistent
+  320  man iptables-persistent
+  321  man netfilter-persistent
+  323  apt deinstall iptables-persistent
+  324  man apt
+  325  apt remove iptables-persistent
+  326  apt install iptables-persistent
+  327  systemctl status netfilter-persistent
+  329  cd etc
+  330  cd /etc
+  331  ls -la
+  332  cd iptables/
+  333  ls
+  334  iptables -t nat -A POSTROUTING -o end0 -j MASQUERADE
+  335  iptables -A FORWARD -i end0 -o wlan0 -m state --state RELATED,ESTABLISHED -j ACCEPT
+  336  iptables -A FORWARD -i wlan0 -o end0 -j ACCEPT
+  337  iptables-save > /etc/iptables/rules.v4
+  338  iptables -t nat -S
+  339  iptables -S
+  340  ls
+  341  cat rules.v4 
+  342  shutdown -r now
+  343  iproute
+  344  ip addr
+  345  uname -a
+  346  bluetoothctl
+  347  uname
+  348  uname -a
+  349  exit
+  350  shutdown -h now
+  351  iptables -t nat -S
+  352  iptables -S
+  353  systemctl status dnsmasq
+  354  systemctl status hostapd
+  356  ls
+  374  last -x shutdown
+  375  cat blelog.240722 
+  376  cat blelog.240722 
+  382  exit
+  383  env
+  384  history
+  385  ls
+  386  history >history.txt
