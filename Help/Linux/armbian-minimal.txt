@@ -46,9 +46,9 @@ systemctl start hostapd
 
 ---------------------------------
 echo 1 > /proc/sys/net/ipv4/ip_forward
-sudo iptables -t nat -A POSTROUTING -o end0 -j MASQUERADE
-sudo iptables -A FORWARD -i end0 -o wlan0 -m state --state RELATED,ESTABLISHED -j ACCEPT
-sudo iptables -A FORWARD -i wlan0 -o end0 -j ACCEPT
+iptables -t nat -A POSTROUTING -o end0 -j MASQUERADE
+iptables -A FORWARD -i end0 -o wlan0 -m state --state RELATED,ESTABLISHED -j ACCEPT
+iptables -A FORWARD -i wlan0 -o end0 -j ACCEPT
 ---------------------------------
 iptables -t nat -S
 -P PREROUTING ACCEPT
@@ -69,3 +69,57 @@ iptables -S
 iptables-save > /etc/iptables/rules.v4
 apt install iptables-persistent
 
+
+===================4G modem huawei E3372-607=======================
+apt-get install usb-modeswitch
+lsusb
+#usb_modeswitch -v 12d1 -p 1f01 -M '55534243123456780000000000000011062000000101000100000000000000'
+#usb_modeswitch -v 12d1 -p 14dc -M '55534243123456780000000000000011062000000101000100000000000000'
+
+/*!!! -J --huawei-new-mode   #Send a specific bulk message used by all newer Huawei devices*/
+usb_modeswitch -J -v 12d1 -p 1f01  #only this command is enough !!!
+
+
+lsusb
+Bus 006 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
+Bus 003 Device 009: ID 12d1:14dc Huawei Technologies Co., Ltd. E33372 LTE/UMTS/GSM HiLink Modem/Networkcard
+Bus 003 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+
+root@orangepizero3:~# ifconfig -a
+
+enx0c5b8f279a64: flags=4098<BROADCAST,MULTICAST>  mtu 1500
+        ether 0c:5b:8f:27:9a:64  txqueuelen 1000  (Ethernet)
+        RX packets 0  bytes 0 (0.0 B)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 0  bytes 0 (0.0 B)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+		
+------------------netplan------------------------		
+network:
+  version: 2
+  renderer: networkd
+  ethernets:
+    all-eth-interfaces:
+      match:
+        name: "end*"
+      dhcp4: yes
+      dhcp6: yes
+      ipv6-privacy: yes
+    wlan0:                  #for wifi AP static address
+      addresses:
+        - 172.24.1.1/24
+    eth1:                   #for Huawei E3372-607 G4-modem
+      dhcp4: true
+      match:
+        macaddress: 0c:5b:8f:27:9a:64
+      set-name: eth1        #rename by mac address
+-------------------------------------------------------
+netplan apply
+ifconfig -a
+
+iptables -t nat -A POSTROUTING -o eth1 -j MASQUERADE
+iptables -A FORWARD -i eth1 -o wlan0 -m state --state RELATED,ESTABLISHED -j ACCEPT
+iptables -A FORWARD -i wlan0 -o eth1 -j ACCEPT
+iptables-save > /etc/iptables/rules.v4
+reboot
+===============================================================

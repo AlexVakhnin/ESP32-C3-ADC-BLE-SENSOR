@@ -13,7 +13,12 @@ network:
         name: "end*"
       dhcp4: yes
       dhcp6: yes
-      ipv6-privacy: yes # Enabled by default on most current systems, but networkd currently doesn't enable IPv6 privacy by default, see https://man.archlinux.org/man/systemd.network.5
-    wlan0:
+      ipv6-privacy: yes
+    wlan0:                  #for wifi AP static address
       addresses:
         - 172.24.1.1/24
+    eth1:                   #for Huawei E3372-607 G4-modem
+      dhcp4: true
+      match:
+        macaddress: 0c:5b:8f:27:9a:64
+      set-name: eth1        #rename by mac address
