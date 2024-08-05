@@ -13,15 +13,13 @@ extern boolean doShutdown;
 extern String dispstatus;
 extern boolean doPowerOn;
 extern boolean doPause;
-//extern long ble_pcounter;
 extern long pause_counter;
 extern int zone_flag;
 extern int old_zone_flag;
 extern boolean ac220v_flag;
 extern boolean old_ac220v_flag;
 
-//Variables
-//const int orange_pin = ORANGE_RELAY_PIN;//battery charging relay pin
+//battery charging relay pin
 extern int orange_pin;
 
 //relay output init
@@ -41,7 +39,7 @@ void relay_control(){
   // BMS-3S-1 отключает при уровне 9.3 вольта..
   if(zone_flag ==ZONE_LOW && digitalRead(orange_pin)==RELAY_ON){
     digitalWrite(orange_pin, RELAY_OFF); //relay = OFF
-    Serial.println("Сritically low level..RELAY OFF (CHECK ERROR..)");
+    Serial.println("Critically low level..RELAY OFF (CHECK ERROR..)");
     //ESP.restart();
     dispstatus = "OFF";
     doShutdown=false;
@@ -78,10 +76,5 @@ void relay_control(){
     doPowerOn=true;
     dispstatus = "WON";
   }
-
-
-
-  //DEBUG
-  //Serial.println("Relay: "+String(digitalRead(orange_pin)));
-  
+ 
 }

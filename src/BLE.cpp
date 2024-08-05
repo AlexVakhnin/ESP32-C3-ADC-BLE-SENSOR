@@ -5,7 +5,6 @@
 #include <BLE2902.h>
 #include <Preferences.h>
 
-//const int orange_pin = 20;
 extern int orange_pin;
 
 //Declaration
@@ -17,11 +16,6 @@ void storage_alarm_l(String su);
 void storage_dev_name(String dname);
 void help_print();
 void reset_nvram();
-extern void disp_show();
-extern void disp_main();
-//Global Variables
-extern String ds1;
-extern String ds2;
 extern String dev_name;
 extern int sens_value;
 extern int sens1_value;
@@ -34,7 +28,6 @@ extern double factor1; //(nvram)
 extern double adc_calibr; //(nvram)
 extern float alarm_h; //(nvram)
 extern float alarm_l; //(nvram)
-extern boolean ble_indicate;
 extern long ble_pcounter;
 extern long ble_period;
 extern long pause_counter;
@@ -81,8 +74,6 @@ class MyServerCallbacks: public BLEServerCallbacks {
       //    pServer->disconnect(param->connect.conn_id) ;//force disconnect client..
       //}
       Serial.print("Event-Connect..");Serial.println(remoteAddress);
-      ble_indicate = true; //захват дисплея
-      ds1="R:";ds2="S:";disp_show(); //вывод на дисплей
       deviceConnected = true;
       digitalWrite(8, LOW); //led = ON (DEBUG..)
     };
@@ -92,8 +83,6 @@ class MyServerCallbacks: public BLEServerCallbacks {
       Serial.println("Event-Disconnect..");
       ble_period=ble_pcounter; //время между BLE опросами
       ble_pcounter=0;
-      disp_main(); //обмен BLE закончен, показать основной экран
-      ble_indicate = false; //отпускаем дисплей
       delay(300); // give the bluetooth stack the chance to get things ready
       BLEDevice::startAdvertising();  // restart advertising
       digitalWrite(8, HIGH); //led = OFF (DEBUG..)
@@ -109,12 +98,10 @@ class MyCallbacks: public BLECharacteristicCallbacks {
             //печатаем строку от BLE
             String pstr = String(rxValue.c_str());
             Serial.print("BLE received Value: ");Serial.print(pstr);
-            ds1="R:"+pstr; disp_show();//вывод на дисплей
             
             // Do stuff based on the command received from the app
             if (pstr=="at"||pstr=="at\r\n") {     //at
                 ble_handle_tx("OK"); //sensor number
-                ds2="S:OK";disp_show(); //вывод на дисплей
             }
             else if (pstr=="at?"||pstr=="at?\r\n") { //at? - help
                 help_print();
@@ -154,7 +141,6 @@ class MyCallbacks: public BLECharacteristicCallbacks {
             else if (pstr=="atv"||pstr=="atv\r\n") { //atv - result voltage
                 String rv = String(real_voltage,3);
                 ble_handle_tx(rv); //ответ c учетом калибровки
-                ds2="S:"+rv;disp_show(); //вывод на дисплей
             }
             else if (pstr.substring(0,4)=="atu=") {  //atu= - attenuator 0 calibration
                 storage_factor_u(pstr.substring(4));
@@ -178,7 +164,6 @@ class MyCallbacks: public BLECharacteristicCallbacks {
                 ble_handle_tx("DO POWER OFF"); //to BLE terminal
                 dispstatus = "WOF"; //wait timmer value
                 pause_counter=0;//заряжаем паузу..
-                ds2="S:DPO";disp_show(); //вывод на дисплей
                 doPowerOn = false;
                 doPause = false;
                 doShutdown = true; //выключить питание с задержкой
@@ -186,28 +171,15 @@ class MyCallbacks: public BLECharacteristicCallbacks {
             else if (pstr=="poweron"||pstr=="poweron\r\n") { //relay off
                 ble_handle_tx("DO POWER ON"); //to BLE terminal
                 dispstatus = "WON"; //wait baterry charging
-                ds2="S:DO ON";disp_show(); //вывод на дисплей
                 doShutdown = false; //отмена dhutdown
                 doPause = false;
                 doPowerOn = true; //включить питание, если АКБ заряжен
             }
-            else {ble_handle_tx("???");ds2="S:???";disp_show();}
+            else {ble_handle_tx("???");/*ds2="S:???";disp_show();*/}
             
         }
     }
 
-    //FOR DEBUG
-    /*
-    void onRead(BLECharacteristic* pCharacteristic, esp_ble_gatts_cb_param_t* param) { //Read
-        Serial.println("Event-Read..");
-    }
-    void onNotify(BLECharacteristic* pCharacteristic) { //Notify
-        Serial.println("Event-Notify..");
-    }
-    void onStatus(BLECharacteristic* pCharacteristic, Status s, uint32_t code) { //Status
-        Serial.println("Event-Status..");
-    }
-    */
    
  };
 
@@ -274,9 +246,7 @@ void ble_handle_tx(String str){
         if(str.length()==0) str="none..\r\n";
 
         str = str+"\r\n";
-        //Serial.println("str="+str);
         pCharacteristic->setValue(str.c_str());
-        //pCharacteristic->indicate();//для работы с BLE терминалом !!!!!!!
         pCharacteristic->notify(false); //false=indicate; true=wait confirmation
 
         Serial.print("--Send to BLE client: "+str);
@@ -347,7 +317,7 @@ void storage_dev_name(String dname){
 
 void help_print(){
   String  shelp="ati -parameter list";
-          shelp+="\r\natс -calibration parameter list";
+          shelp+="\r\natc -calibration parameter list";
           shelp+="\r\natv -resulting voltage";
           shelp+="\r\natz -set default parameters";
           shelp+="\r\nata=[U_ADC_in] -ADC calibration";
