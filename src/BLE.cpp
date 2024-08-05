@@ -112,7 +112,7 @@ class MyCallbacks: public BLECharacteristicCallbacks {
               if(zone_flag==1) {zone ="HIGH";} else if(zone_flag==2) {zone ="LOW";} else {zone ="MIDDLE";}
               if(ac220v_flag) {ac220="ON";} else {ac220="OFF";}  
               String s ="name="+dev_name
-                  +"\r\natv_counter="+String(ble_pcounter)
+                  +"\r\natv_counter="+String(ble_pcounter)+"/"+String(ble_period)
                   +"\r\nstatus="+dispstatus
                   +"\r\nzone="+zone
                   +"\r\nac220v="+ac220
