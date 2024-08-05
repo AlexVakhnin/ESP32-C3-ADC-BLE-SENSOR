@@ -123,3 +123,10 @@ iptables -A FORWARD -i wlan0 -o eth1 -j ACCEPT
 iptables-save > /etc/iptables/rules.v4
 reboot
 ===============================================================
+#--locate which partition--
+df -h #определить устройство
+#--set check interval--
+tune2fs -l /dev/mmcblk0p1 		#смотреть параметры fs
+tune2fs -i 1 /dev/mmcblk0p1		#запускать fsck каждые сутки, если reboot
+tune2fs -c 1 /dev/mmcblk0p1		#запускать fsck каждую перезагрузку
+#-------------------------------------------------------------
