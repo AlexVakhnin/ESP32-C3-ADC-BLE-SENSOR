@@ -81,8 +81,6 @@ class MyServerCallbacks: public BLEServerCallbacks {
     void onDisconnect(BLEServer* pServer) {
       deviceConnected = false;
       Serial.println("Event-Disconnect..");
-      ble_period=ble_pcounter; //время между BLE опросами
-      ble_pcounter=0;
       delay(300); // give the bluetooth stack the chance to get things ready
       BLEDevice::startAdvertising();  // restart advertising
       digitalWrite(8, HIGH); //led = OFF (DEBUG..)
@@ -114,7 +112,7 @@ class MyCallbacks: public BLECharacteristicCallbacks {
               if(zone_flag==1) {zone ="HIGH";} else if(zone_flag==2) {zone ="LOW";} else {zone ="MIDDLE";}
               if(ac220v_flag) {ac220="ON";} else {ac220="OFF";}  
               String s ="name="+dev_name
-                  +"\r\ntimeout="+String(pause_counter)
+                  +"\r\natv_counter="+String(ble_pcounter)
                   +"\r\nstatus="+dispstatus
                   +"\r\nzone="+zone
                   +"\r\nac220v="+ac220
@@ -139,6 +137,11 @@ class MyCallbacks: public BLECharacteristicCallbacks {
                 ble_handle_tx(s); //information for debug
             }
             else if (pstr=="atv"||pstr=="atv\r\n") { //atv - result voltage
+
+                //измеряем время между опросами напряжения от orange pi
+                ble_period=ble_pcounter; //время между BLE опросами
+                ble_pcounter=0;
+
                 String rv = String(real_voltage,3);
                 ble_handle_tx(rv); //ответ c учетом калибровки
             }

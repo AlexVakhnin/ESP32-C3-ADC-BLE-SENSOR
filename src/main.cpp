@@ -31,19 +31,24 @@ float old_real1_voltage=0; //contains the result of the previous measurement
 
 float alarm_h =11.50; //high threshold value
 float alarm_l =10.00; //low threshold value
-int zone_flag = 0; //current voltage zone
+int zone_flag = 0; //зона по уровню заряда АКБ(1-высокий 0-средний 2-низкий)
 int old_zone_flag = 0; //old voltage zone
 boolean ac220v_flag = false; //220v ON! indicator
 boolean old_ac220v_flag = false; //old 220v ON! indicator
 
-long ble_pcounter = 0; //ble connect period counter
+long ble_pcounter = 0; //счетчик времени между обращениями от orange pi
 long ble_period = 0; //ble connect period
-long pause_counter = 0; //отсчет интервалов для модуля управления реле
+long pause_counter = 0; //счетчик интервалов ожидания для модуля управления реле
 
-boolean doShutdown =false; //for shutdown handling
-boolean doPowerOn =false; // for power on handling
-boolean doPause =false; // for pause handling
-String dispstatus = "WON"; //буквенное обозначение состояния устройства
+boolean doShutdown =false; //команда - выполнить shutdown
+boolean doPowerOn =false; // команда - включить питание
+boolean doPause =false; // команда - ожидать
+
+//буквенное обозначение состояния устройства
+//"WON" - ожидается включение реле питания (при выполнении условий)
+//"WOF" - выполняется процедура shutdown
+//"ON"/"OFF" - реле питания "включено"/"выключено"
+String dispstatus = "WON";
 
 //Ticker hTicker; //for alarm indicate
 
