@@ -49,7 +49,7 @@ void relay_control(){
   }
 
   //shutdown handling
-  if (doShutdown && pause_counter > 19){
+  if (doShutdown && pause_counter > 30){    //1 мин. для shutdown
     digitalWrite(orange_pin, RELAY_OFF); //relay = OFF
     dispstatus = "OFF";
     doShutdown=false;
@@ -70,7 +70,7 @@ void relay_control(){
   }
 
   //pause handling
-  if (doPause && pause_counter > 29){
+  if (doPause && pause_counter > 60){  //2 мин. пауза
     doPause=false;
     doShutdown = false; //отмена dhutdown
     doPowerOn=true;
