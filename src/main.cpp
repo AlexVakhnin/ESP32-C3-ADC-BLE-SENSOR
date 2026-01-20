@@ -15,21 +15,21 @@ const int sens_pin = 0;//A0 for ADC0
 const int sens1_pin = 1;//A1 for ADC1
 int orange_pin = ORANGE_RELAY_PIN;
 
-String dev_name = "ADC-SENSOR#0"; //name of BLE service
+String dev_name = "UPS-RASP-PI"; //name of BLE service
 
 int sens_value = 0; //pure sensor 0
 int sens1_value = 0; //pure sensor 1
 float sens_voltage = 0; //Voltage ADC0 Input
 float sens1_voltage = 0; //Voltage ADC1 Input
-double factor = 5.00; //calibration attenuator0 factor
-double factor1 = 5.00; //calibration attenuator1 factor
-double adc_calibr =3.00; //calibration ADC factor (опорное напряжение)
+double factor = 5.13; //calibration attenuator0 factor
+double factor1 = 5.06; //calibration attenuator1 factor
+double adc_calibr =2.99; //calibration ADC factor (опорное напряжение)
 float real_voltage =0; //measuring voltage ADC0 with attenuator
 float real1_voltage =0; //measuring voltage ADC1 with attenuator
 float old_real_voltage=0; //contains the result of the previous measurement
 float old_real1_voltage=0; //contains the result of the previous measurement
 
-float alarm_h =11.50; //high threshold value
+float alarm_h =12.00; //high threshold value
 float alarm_l =10.00; //low threshold value
 int zone_flag = 0; //зона по уровню заряда АКБ(1-высокий 0-средний 2-низкий)
 int old_zone_flag = 0; //old voltage zone
