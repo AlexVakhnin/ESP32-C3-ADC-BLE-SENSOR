@@ -16,6 +16,8 @@ void storage_alarm_l(String su);
 void storage_dev_name(String dname);
 void help_print();
 void reset_nvram();
+
+uint16_t m_connect_id = -1; //при подключении запоминаем id
 extern String dev_name;
 extern int sens_value;
 extern int sens1_value;
@@ -75,6 +77,7 @@ class MyServerCallbacks: public BLEServerCallbacks {
       //}
       Serial.print("Event-Connect..");Serial.println(remoteAddress);
       deviceConnected = true;
+      m_connect_id = param->connect.conn_id; //запоминаем..
       digitalWrite(8, LOW); //led = ON (DEBUG..)
     };
 
@@ -83,6 +86,7 @@ class MyServerCallbacks: public BLEServerCallbacks {
       Serial.println("Event-Disconnect..");
       delay(300); // give the bluetooth stack the chance to get things ready
       BLEDevice::startAdvertising();  // restart advertising
+      m_connect_id = -1; //обнуляем..
       digitalWrite(8, HIGH); //led = OFF (DEBUG..)
     }
 };
@@ -112,7 +116,7 @@ class MyCallbacks: public BLECharacteristicCallbacks {
               if(zone_flag==1) {zone ="HIGH";} else if(zone_flag==2) {zone ="LOW";} else {zone ="MIDDLE";}
               if(ac220v_flag) {ac220="ON";} else {ac220="OFF";}  
               String s ="name="+dev_name
-                  +"\r\natv_counter="+String(ble_pcounter)+"/"+String(ble_period)
+                  +"\r\natv_counter="+String(ble_period)+"/"+String(ble_pcounter)
                   +"\r\nstatus="+dispstatus
                   +"\r\nzone="+zone
                   +"\r\nac220v="+ac220
@@ -171,14 +175,20 @@ class MyCallbacks: public BLECharacteristicCallbacks {
                 doPause = false;
                 doShutdown = true; //выключить питание с задержкой
             }
-            else if (pstr=="poweron"||pstr=="poweron\r\n") { //relay off
+            else if (pstr=="poweron"||pstr=="poweron\r\n") { //
                 ble_handle_tx("DO POWER ON"); //to BLE terminal
                 dispstatus = "WON"; //wait baterry charging
                 doShutdown = false; //отмена dhutdown
                 doPause = false;
                 doPowerOn = true; //включить питание, если АКБ заряжен
             }
-            else {ble_handle_tx("???");/*ds2="S:???";disp_show();*/}
+            else if (pstr=="disconnect"||pstr=="disconnect\r\n") { //disconnect
+              if(m_connect_id != -1){
+                //Serial.println("disconnect force..");
+                pServer->disconnect(m_connect_id) ;//force disconnect client..
+              }
+            }
+            else {ble_handle_tx("???");}
             
         }
     } 
