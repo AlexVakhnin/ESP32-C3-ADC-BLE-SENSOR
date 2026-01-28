@@ -17,7 +17,7 @@ void storage_dev_name(String dname);
 void help_print();
 void reset_nvram();
 
-uint16_t m_connect_id = -1; //при подключении запоминаем id
+
 extern String dev_name;
 extern int sens_value;
 extern int sens1_value;
@@ -30,8 +30,8 @@ extern double factor1; //(nvram)
 extern double adc_calibr; //(nvram)
 extern float alarm_h; //(nvram)
 extern float alarm_l; //(nvram)
-extern long ble_pcounter;
-extern long ble_period;
+//extern long ble_pcounter;
+//extern long ble_period;
 extern long pause_counter;
 extern boolean doShutdown;
 extern boolean doPowerOn;
@@ -42,7 +42,13 @@ extern boolean ac220v_flag;
 
 BLEServer* pServer = NULL;
 BLECharacteristic* pCharacteristic = NULL;
-bool deviceConnected = false;
+
+bool deviceConnected = false; //флаг "клиент BLE подключен"
+uint16_t m_connect_id = -1; //при подключении запоминаем id
+long wdt_counter = 0; //для определения зависания клиента BLE
+long ble_pcounter = 0; //счетчик времени между обращениями от orange pi
+long ble_period = 0; //ble connect period
+
 uint32_t value = 0;
 
 Preferences preferences; //for NVRAM
@@ -77,6 +83,7 @@ class MyServerCallbacks: public BLEServerCallbacks {
       //}
       Serial.print("Event-Connect..");Serial.println(remoteAddress);
       deviceConnected = true;
+      wdt_counter = 0; //в начало отсчета
       m_connect_id = param->connect.conn_id; //запоминаем..
       digitalWrite(8, LOW); //led = ON (DEBUG..)
     };
@@ -100,6 +107,7 @@ class MyCallbacks: public BLECharacteristicCallbacks {
             //печатаем строку от BLE
             String pstr = String(rxValue.c_str());
             Serial.print("BLE received Value: ");Serial.print(pstr);
+            wdt_counter=0; //приняли строку (клиент жив) - обнуляем счетчик watchdog
             
             // Do stuff based on the command received from the app
             if (pstr=="at"||pstr=="at\r\n") {     //at
@@ -116,7 +124,7 @@ class MyCallbacks: public BLECharacteristicCallbacks {
               if(zone_flag==1) {zone ="HIGH";} else if(zone_flag==2) {zone ="LOW";} else {zone ="MIDDLE";}
               if(ac220v_flag) {ac220="ON";} else {ac220="OFF";}  
               String s ="name="+dev_name
-                  +"\r\natv_counter="+String(ble_period)+"/"+String(ble_pcounter)
+                  +"\r\natv_counter="+String(ble_period)+"<-"+String(ble_pcounter)
                   +"\r\nstatus="+dispstatus
                   +"\r\nzone="+zone
                   +"\r\nac220v="+ac220
@@ -144,7 +152,7 @@ class MyCallbacks: public BLECharacteristicCallbacks {
 
                 //измеряем время между опросами напряжения от orange pi
                 ble_period=ble_pcounter; //время между BLE опросами
-                ble_pcounter=0;
+                ble_pcounter=0; //обнуляем счетчик (T=2000)
 
                 String rv = String(real_voltage,3);
                 ble_handle_tx(rv); //ответ c учетом калибровки
@@ -348,4 +356,17 @@ void reset_nvram(){
   ble_handle_tx("NVRAM Key Reset.."); //ответ на BLE
   delay(3000);
   ESP.restart();
+}
+//watchdog timer - обработка зависания клиента BLE
+void wdt_handle(){
+  ble_pcounter++; pause_counter++;
+
+  if(deviceConnected and m_connect_id != -1){
+    wdt_counter++;
+    if(wdt_counter>30){
+      wdt_counter=0;
+      pServer->disconnect(m_connect_id) ;//force disconnect client..
+    }
+
+  }
 }

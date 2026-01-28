@@ -8,6 +8,7 @@
 extern void ble_setup();
 extern void relay_control();
 extern void relay_init();
+extern void wdt_handle();
 //void alarm_blink();
 void relay_control();
 
@@ -36,8 +37,6 @@ int old_zone_flag = 0; //old voltage zone
 boolean ac220v_flag = false; //220v ON! indicator
 boolean old_ac220v_flag = false; //old 220v ON! indicator
 
-long ble_pcounter = 0; //счетчик времени между обращениями от orange pi
-long ble_period = 0; //ble connect period
 long pause_counter = 0; //счетчик интервалов ожидания для модуля управления реле
 
 boolean doShutdown =false; //команда - выполнить shutdown
@@ -110,7 +109,7 @@ void loop() {
   if(real1_voltage > AC220V_THRESHOLD && old_real1_voltage > AC220V_THRESHOLD) ac220v_flag=true;
   else ac220v_flag=false;
 
-  ble_pcounter++; pause_counter++;
+  wdt_handle(); //обслуживание счетчиков
 
   // логика обслуживания реле
   relay_control();
