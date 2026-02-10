@@ -14,10 +14,12 @@ async def main():
             print(f"Data '{data_to_send.decode()}' written to {MODEL_NBR_UUID}.")
 
             rdata = await client.read_gatt_char(MODEL_NBR_UUID)
-            nstr = rdata.decode()[0:6] #-> to utf8 and cut
+            nstr = rdata.decode() # to utf8
+            ind = nstr.find(".") #find position of "."
+            nstr = nstr[0:ind+4] #trim line feed characters (12.123)
             print(f"Data term: '{nstr}'")
-            #n = float(nstr)
-            n = 11
+            n = float(nstr)
+            #n = 11
             print("Ubat =", n)
             if n < 9 or n > 15:
                 print("Error Voltage..")
@@ -28,7 +30,8 @@ async def main():
                 await client.write_gatt_char(MODEL_NBR_UUID, data_shutdown, response=True)
                 print(f"Data '{data_shutdown.decode()}' written to {MODEL_NBR_UUID}.")
                 rdata = await client.read_gatt_char(MODEL_NBR_UUID)
-                print(f"Data term: '{rdata.decode()}'")
+                nstr = rdata.decode()[0:12] #-> to utf8 and cut (DO POWER OFF)
+                print(f"Data term: '{nstr}'")
 
     except BleakError as e:
         print(f"Bleak Error: {e}")
