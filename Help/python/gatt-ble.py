@@ -1,7 +1,11 @@
 import sys
 import subprocess
 import asyncio
+import logging
 from bleak import BleakClient, BleakError
+
+logging.basicConfig(level=logging.INFO, filename="/home/orangepi/py-ups.log",
+                 format="%(asctime)s %(levelname)s %(message)s")
 
 async def main():
     ble_address = "34:B7:DA:F8:4C:B2"
@@ -11,7 +15,7 @@ async def main():
     v_min = 11.88
     command =  ["shutdown", "now"]
     try:
-        async with BleakClient(ble_address, adapter = "hci0") as client:
+        async with BleakClient(ble_address, adapter = "hci0") as client: #UB500 as hci0 work fine! 
             print(f"Connected: {client.is_connected}")
             await client.write_gatt_char(MODEL_NBR_UUID, data_to_send, response=True)
             print(f"Data '{data_to_send.decode()}' written to {MODEL_NBR_UUID}.")
@@ -23,6 +27,7 @@ async def main():
             print(f"Data term: '{nstr}'")
             n = float(nstr)
             #n = 11
+            logging.info(f"Ubat={n:.2f}") #-->Logging
             print("Ubat =", n)
             if n < 9 or n > 15:
                 print("Error Voltage..")
@@ -34,16 +39,18 @@ async def main():
                 print(f"Data '{data_shutdown.decode()}' written to {MODEL_NBR_UUID}.")
                 rdata = await client.read_gatt_char(MODEL_NBR_UUID)
                 nstr = rdata.decode()[0:12] #-> to utf8 and cut (DO POWER OFF)
+                logging.info(f"Ubat<{v_min} '{nstr}'") #-->Logging
                 print(f"Data term: '{nstr}'")
                 if nstr.find("POWER") != -1:
-                    print("Start Shutdown..")
+                    print("Start Shutdown for Linux..")
                     #subprocess.run(command, check=True) #Linux shutdown(bash)
 
     except BleakError as e:
+        logging.error(f"Bleak Error: {e}") #-->Logging
         print(f"Bleak Error: {e}")
     except asyncio.TimeoutError:
+        logging.error("Timeout Error...") #-->Logging
         print("Timeout Error...")
-
 
 asyncio.run(main())
 
