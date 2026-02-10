@@ -1,4 +1,5 @@
-
+import sys
+import subprocess
 import asyncio
 from bleak import BleakClient, BleakError
 
@@ -7,6 +8,8 @@ async def main():
     MODEL_NBR_UUID = "d8182a40-7316-4cbf-9c6e-be507a76d775"
     data_to_send = bytearray(b"atv")
     data_shutdown = bytearray(b"shutdown")
+    v_min = 11.88
+    command =  ["shutdown", "now"]
     try:
         async with BleakClient(ble_address, adapter = "hci0") as client:
             print(f"Connected: {client.is_connected}")
@@ -23,21 +26,24 @@ async def main():
             print("Ubat =", n)
             if n < 9 or n > 15:
                 print("Error Voltage..")
-            elif n > 12:
-                print("Ubat > 12V OK!")
+            elif n > v_min:
+                print(f"Ubat > {v_min} OK!")
             else:
-                print("Ubat < 12V Force shutdown..")
+                print(f"Ubat < {v_min} Force shutdown..")
                 await client.write_gatt_char(MODEL_NBR_UUID, data_shutdown, response=True)
                 print(f"Data '{data_shutdown.decode()}' written to {MODEL_NBR_UUID}.")
                 rdata = await client.read_gatt_char(MODEL_NBR_UUID)
                 nstr = rdata.decode()[0:12] #-> to utf8 and cut (DO POWER OFF)
                 print(f"Data term: '{nstr}'")
+                if nstr.find("POWER") != -1:
+                    print("Start Shutdown..")
+                    #subprocess.run(command, check=True) #Linux shutdown(bash)
 
     except BleakError as e:
         print(f"Bleak Error: {e}")
     except asyncio.TimeoutError:
         print("Timeout Error...")
-        
+
 
 asyncio.run(main())
 
