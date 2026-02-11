@@ -3,7 +3,7 @@
 **Breadboard:** [sensor_bb3](/Help/sensor-v3_bb.png)
 **Layout:** [device](/Help/device.jpg)<br />
 **Linux testing:** [linux-bluetoothctl](/Help/Linux/linux-bluetoothctl.txt)
-**Linux python shutdown script:** [shutdown-script](/Help/python/gatt-ble.py)<br />
+**Linux python shutdown script:** [shutdown-script](/Help/python/gatt-ble.py)<br /><br />
 **ESP32 client for 4 ESP32 sensors:** [ESP32-S3-BLE-CLIENT-4S](https://github.com/AlexVakhninESP32-S3-BLE-CLIENT-4S)<br />
 **Schematic sensor simple:** [sensor-schem](/Help/sensor-schem.png)
 **Breadboard:** [sensor_bb](/Help/sensor_bb.png)
