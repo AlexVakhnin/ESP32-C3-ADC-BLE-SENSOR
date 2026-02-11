@@ -5,7 +5,7 @@
 **Breadboard:** [sensor_bb3](/Help/sensor-v3_bb.png)
 **Layout:** [device](/Help/device.jpg)<br />
 **Linux testing:** [linux-bluetoothctl](/Help/Linux/linux-bluetoothctl.txt)
-**Linux shutdown script:** [shutdown-script](/Help/Linux/ble.sh)<br />
+**Linux shutdown script:** [shutdown-script](/Help/Linux/python/gatt-ble.py)<br />
 **Client for 4 sensors:** [ESP32-S3-BLE-CLIENT-4S](https://github.com/AlexVakhnin/ESP32-S3-BLE-CLIENT-4S)
 ### The device has been tested using programs:
 ![andr-client1](/Help/andr-client1.png)

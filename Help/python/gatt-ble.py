@@ -1,3 +1,8 @@
+#  Usage with crontab:
+#  * * * * * /usr/bin/python /root/gatt-ble.py > /dev/null
+#
+#  For Project: https://github.com/AlexVakhnin/ESP32-C3-ADC-BLE-SENSOR
+#
 import sys
 import subprocess
 import asyncio
@@ -43,7 +48,7 @@ async def main():
                 print(f"Data term: '{nstr}'")
                 if nstr.find("POWER") != -1:
                     print("Start Shutdown for Linux..")
-                    #subprocess.run(command, check=True) #Linux shutdown(bash)
+                    #subprocess.run(command, check=True) #Linux shutdown(bash) Need uncomment !
 
     except BleakError as e:
         logging.error(f"Bleak Error: {e}") #-->Logging
