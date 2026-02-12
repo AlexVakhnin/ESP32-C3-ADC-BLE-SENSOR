@@ -1,3 +1,4 @@
+#
 #  Usage with crontab:
 #  * * * * * /usr/bin/python /root/gatt-ble.py > /dev/null
 #
@@ -7,9 +8,15 @@ import sys
 import subprocess
 import asyncio
 import logging
+#import os
 from bleak import BleakClient, BleakError
+from datetime import datetime
 
-logging.basicConfig(level=logging.INFO, filename="/home/orangepi/py-ups.log",
+timestamp = datetime.now().strftime('%Y-%m-%d')
+log_filename = f'py-ups-{timestamp}.log'
+full_log_path = "/home/orangepi/"+log_filename
+
+logging.basicConfig(level=logging.INFO, filename=full_log_path,
                  format="%(asctime)s %(levelname)s %(message)s")
 
 async def main():
